@@ -1,3 +1,5 @@
+import numpy as np
+
 def linear_regression_loops(X, y):
     '''
     X is an n x d matrix and may be thought of as a list of lists.
