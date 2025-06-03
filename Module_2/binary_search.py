@@ -1,3 +1,16 @@
+'''
+Binary Search
+
+• Strategy:
+    • Eliminate about half the items left with one comparison. Data array is successively divided into two parts, thus the name binary.
+• Pseudocode:
+    • Look at the middle element
+    • If target value == middle element -- DONE!
+    • If target value > middle element -- must be in 2nd half
+    • If target value < middle element -- must be in 1st half
+'''
+
+
 def binary_search(data: list[int], target: int):
     data_are_ascending = True
     if data[1] > data[0]:
