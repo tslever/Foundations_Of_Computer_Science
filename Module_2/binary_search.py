@@ -1,6 +1,8 @@
 '''
 Binary Search
 
+Time complexity is O(log base 2 of n).
+
 • Strategy:
     • Eliminate about half the items left with one comparison. Data array is successively divided into two parts, thus the name binary.
 • Pseudocode:
