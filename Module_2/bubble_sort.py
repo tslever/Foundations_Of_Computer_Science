@@ -22,7 +22,7 @@ def bubble_sort(data):
             if data[j] < data[j - 1]:
                 swap(data, j, j - 1)
         print("[" + ", ".join(str(datum) for datum in data) + "]")
-    print("[" + ", ".join(str(datum) for datum in data) + "]")
+    print("Final list is [" + ", ".join(str(datum) for datum in data) + "].")
 
 
 def swap(data, x, y):
