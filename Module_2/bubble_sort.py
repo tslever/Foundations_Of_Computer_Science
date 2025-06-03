@@ -13,6 +13,8 @@ Time complexity is O(n^2) in worst case.
 def bubble_sort(data):
     '''
     Bubble elements down to the bottom of the list of data.
+
+    TODO: Stop if there are no swaps.
     '''
     # For each element at index i from 0 inclusive to n exclusive...
     for i in range(0, len(data)):
