@@ -21,6 +21,7 @@ def bubble_sort(data):
             # If the element at j is less than that at j - 1, swap them.
             if data[j] < data[j - 1]:
                 swap(data, j, j - 1)
+        print("[" + ", ".join(str(datum) for datum in data) + "]")
     print("[" + ", ".join(str(datum) for datum in data) + "]")
 
 
@@ -32,6 +33,7 @@ def swap(data, x, y):
 
 if __name__ == "__main__":
     
-    data = [3, 2, 1]
+    data = [7, 5, 2, 4, 3, 9]
 
+    print("Data is [" + ", ".join(str(datum) for datum in data) + "].\n")
     bubble_sort(data)
