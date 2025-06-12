@@ -47,22 +47,22 @@ def run_exercise_1():
 
     print(
     '''Exercise 1: Hashing and Chaining with String keys
-    Let's assume the hash table size = ''' + str(HASH_TABLE_SIZE) + '''
-    Use the hash function to load the following commodity items into the hash table:
-    ''' + '\n'.join([str(commodity) for commodity in list_of_commodities]) + '''
+Let's assume the hash table size = ''' + str(HASH_TABLE_SIZE) + '''
+Use the hash function to load the following commodity items into the hash table:
+''' + '\n'.join([str(commodity) for commodity in list_of_commodities]) + '''
 
-    Will use ASCII code for the characters as follows:\n''' +
+Will use ASCII code for the characters as follows:\n''' +
     "character," + ','.join([chr(i) for i in range(97, 118 + 1)]) + '\n' +
     "ASCII code," + ','.join([str(i) for i in range(97, 118 + 1)]) + '''
 
-    For instance,
+For instance,
     '''
     )
     hash_function_for_exercise_1(list_of_commodities[0])
     hash_function_for_exercise_1(list_of_commodities[len(list_of_commodities) - 1])
     print(
     '''
-    Complete the diagram below using the Chaining collision resolution technique:
+Complete the diagram below using the Chaining collision resolution technique:
     '''
     )
 
@@ -82,7 +82,7 @@ def run_exercise_1():
 
     print(
     '''
-    Item,Qty,Price,h(key)\n''' + '\n'.join([str(commodity) + "," + str(dictionary_of_commodities_and_hash_codes[commodity]) for commodity in list_of_commodities])
+Item,Qty,Price,h(key)\n''' + '\n'.join([str(commodity) + "," + str(dictionary_of_commodities_and_hash_codes[commodity]) for commodity in list_of_commodities])
     )
 
     '''
@@ -161,5 +161,77 @@ def run_exercise_1():
     orange,2,3.0,12
     '''
 
+def insert(integer: int, hash_table: dict[int, list]):
+    probe_sequence = []
+    list_of_comments = []
+    index = integer % HASH_TABLE_SIZE
+    probe_sequence.append(index)
+    number_of_statuses_checked = 0
+    while hash_table[index][0] not in ['D', 'E']:
+        number_of_statuses_checked += 1
+        if number_of_statuses_checked > HASH_TABLE_SIZE:
+            raise Exception("All statuses were checked.")
+        list_of_comments.append("Collision")
+        index = (index + 1) % HASH_TABLE_SIZE
+        probe_sequence.append(index)
+    if hash_table[index][0] in ['D', 'E']:
+        hash_table[index] = ['O', integer]
+        list_of_comments.append("Success")
+    else:
+        raise Exception("Status is not 'D' or 'E'.")
+    return probe_sequence, list_of_comments
+
+def find(integer: int, hash_table: dict[int, list]):
+    probe_sequence = []
+    list_of_comments = []
+    index = integer % HASH_TABLE_SIZE
+    probe_sequence.append(index)
+    number_of_statuses_checked = 0
+    while (hash_table[index][1] != integer) and (hash_table[index][0] != 'E'):
+        number_of_statuses_checked += 1
+        if number_of_statuses_checked > HASH_TABLE_SIZE:
+            raise Exception("All statuses were checked.")
+        list_of_comments.append("Collision")
+        index = (index + 1) % HASH_TABLE_SIZE
+        probe_sequence.append(index)
+    if hash_table[index][1] == integer:
+        list_of_comments.append("Success")
+    else:
+        list_of_comments.append("Fail")
+    return probe_sequence, list_of_comments
+
+def run_exercise_2():
+    hash_table = {i: ['E', None] for i in range(0, HASH_TABLE_SIZE)}
+
+    print(
+'''Exercise 2: Hashing and Linear Probing
+Given this hash table's initial configuration: (Note: size of table = ''' + str(HASH_TABLE_SIZE) + ''', 'E' = Empty state)
+Index,Status,Value\n''' + '\n'.join([str(i) + "," + the_list[0] + ',' + str(the_list[1]) for (i, the_list) in hash_table.items()]) + '''
+1. Perform the operations in the table below showing the following two things after each operation:
+    a. The hash index or the probe sequence if necessary
+    b. A comment "Collision" / "Success" / "Fail" to indicate the appropriate event*
+2. Show the final hash table after all the operations have been performed.
+The first operation has been done for you:
+Operation,Index or Probe Sequence,Comment'''
+    )
+    for integer in [18, 26, 35, 9]:
+        probe_sequence, list_of_comments = insert(integer, hash_table)
+        print("Insert(" + str(integer) + ")," + '|'.join(str(i) for i in probe_sequence) + ',' + '|'.join(comment for comment in list_of_comments))
+    
+    for integer in [15, 48, 9]:
+        probe_sequence, list_of_comments = find(integer, hash_table)
+        print("Find(" + str(integer) + ")," + '|'.join(str(i) for i in probe_sequence) + ',' + '|'.join(comment for comment in list_of_comments))
+
+    for integer in [64, 47]:
+        probe_sequence, list_of_comments = insert(integer, hash_table)
+        print("Insert(" + str(integer) + ")," + '|'.join(str(i) for i in probe_sequence) + ',' + '|'.join(comment for comment in list_of_comments))
+
+    for integer in [35]:
+        probe_sequence, list_of_comments = find(integer, hash_table)
+        print("Find(" + str(integer) + ")," + '|'.join(str(i) for i in probe_sequence) + ',' + '|'.join(comment for comment in list_of_comments))
+
+    print('''Index,Status,Value\n''' + '\n'.join([str(i) + "," + the_list[0] + ',' + str(the_list[1]) for (i, the_list) in hash_table.items()]))
+
 if __name__ == "__main__":
-    run_exercise_1()
+    #run_exercise_1()
+    run_exercise_2()
