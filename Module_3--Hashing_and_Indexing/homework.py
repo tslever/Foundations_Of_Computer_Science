@@ -165,7 +165,9 @@ def insert(integer: int, hash_table: dict[int, list]):
     probe_sequence = []
     list_of_comments = []
     index = integer % HASH_TABLE_SIZE
-    probe_sequence.append(index)
+    #probe_sequence.append(index)
+    number_of_probe = 0
+    probe_sequence.append("h_" + str(number_of_probe) + "(" + str(integer) + ") = (" + str(integer) + " + " + str(number_of_probe) + ") % " + str(HASH_TABLE_SIZE) + " = " + str(index))
     number_of_statuses_checked = 0
     while hash_table[index][0] not in ['D', 'E']:
         number_of_statuses_checked += 1
@@ -173,7 +175,9 @@ def insert(integer: int, hash_table: dict[int, list]):
             raise Exception("All statuses were checked.")
         list_of_comments.append("Collision")
         index = (index + 1) % HASH_TABLE_SIZE
-        probe_sequence.append(index)
+        #probe_sequence.append(index)
+        number_of_probe += 1
+        probe_sequence.append("h_" + str(number_of_probe) + "(" + str(integer) + ") = (" + str(integer) + " + " + str(number_of_probe) + ") % " + str(HASH_TABLE_SIZE) + " = " + str(index))
     if hash_table[index][0] in ['D', 'E']:
         hash_table[index] = ['O', integer]
         list_of_comments.append("Success")
@@ -185,7 +189,9 @@ def find(integer: int, hash_table: dict[int, list]):
     probe_sequence = []
     list_of_comments = []
     index = integer % HASH_TABLE_SIZE
-    probe_sequence.append(index)
+    #probe_sequence.append(index)
+    number_of_probe = 0
+    probe_sequence.append("h_" + str(number_of_probe) + "(" + str(integer) + ") = (" + str(integer) + " + " + str(number_of_probe) + ") % " + str(HASH_TABLE_SIZE) + " = " + str(index))
     number_of_statuses_checked = 0
     while (hash_table[index][1] != integer) and (hash_table[index][0] != 'E'):
         number_of_statuses_checked += 1
@@ -193,7 +199,9 @@ def find(integer: int, hash_table: dict[int, list]):
             raise Exception("All statuses were checked.")
         list_of_comments.append("Collision")
         index = (index + 1) % HASH_TABLE_SIZE
-        probe_sequence.append(index)
+        #probe_sequence.append(index)
+        number_of_probe += 1
+        probe_sequence.append("h_" + str(number_of_probe) + "(" + str(integer) + ") = (" + str(integer) + " + " + str(number_of_probe) + ") % " + str(HASH_TABLE_SIZE) + " = " + str(index))
     if hash_table[index][1] == integer:
         list_of_comments.append("Success")
     else:
@@ -204,14 +212,17 @@ def run_exercise_2():
     hash_table = {i: ['E', None] for i in range(0, HASH_TABLE_SIZE)}
 
     print(
-'''Exercise 2: Hashing and Linear Probing
+'''
+Exercise 2: Hashing and Linear Probing
 Given this hash table's initial configuration: (Note: size of table = ''' + str(HASH_TABLE_SIZE) + ''', 'E' = Empty state)
 Index,Status,Value\n''' + '\n'.join([str(i) + "," + the_list[0] + ',' + str(the_list[1]) for (i, the_list) in hash_table.items()]) + '''
+
 1. Perform the operations in the table below showing the following two things after each operation:
     a. The hash index or the probe sequence if necessary
     b. A comment "Collision" / "Success" / "Fail" to indicate the appropriate event*
 2. Show the final hash table after all the operations have been performed.
 The first operation has been done for you:
+
 Operation,Index or Probe Sequence,Comment'''
     )
     for integer in [18, 26, 35, 9]:
@@ -230,8 +241,25 @@ Operation,Index or Probe Sequence,Comment'''
         probe_sequence, list_of_comments = find(integer, hash_table)
         print("Find(" + str(integer) + ")," + '|'.join(str(i) for i in probe_sequence) + ',' + '|'.join(comment for comment in list_of_comments))
 
-    print('''Index,Status,Value\n''' + '\n'.join([str(i) + "," + the_list[0] + ',' + str(the_list[1]) for (i, the_list) in hash_table.items()]))
+    print(
+        '''
+One entry in final hash table (notice the change of status from 'E' to 'O') [is the row with index 5]:
+
+Index,Status,Value\n''' +
+        '\n'.join([str(i) + "," + the_list[0] + ',' + str(the_list[1]) for (i, the_list) in hash_table.items()]) + '\n' +
+        '''
+* Note for Exercise 2 on when to use the "Collision" / "Success" / "Fail" comments:
+    - "Collision"
+        - Inserting but cell is occupied
+        - Finding but something else is there
+    - "Success"
+        - Able to insert
+        - Able to find
+    - "Fail"
+        - Unable to find [while linear probing you find a cell with status "Empty" ('E')]
+'''
+    )
 
 if __name__ == "__main__":
-    #run_exercise_1()
+    run_exercise_1()
     run_exercise_2()
