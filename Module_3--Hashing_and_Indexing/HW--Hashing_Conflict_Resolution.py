@@ -137,14 +137,16 @@ Index,Status,Value
 Exercise 3: Additional questions
 
 Q1) Name one advantage of Chaining over Linear Probing.
-According to https://www.geeksforgeeks.org/dsa/open-addressing-collision-handling-technique-in-hashing/ ,
-"in chaining, Hash table never fills up
-[other than in references to linked lists or by using all memory available to the process hosting the hash table]...
-In open addressing, table may become full.".
+According to https://stackoverflow.com/questions/23821764/why-do-we-use-linear-probing-in-hash-tables-when-there-is-separate-chaining-link ,
+"One weakness of linear probing is that, with a bad choice of hash function, primary clustering can cause the performance of the table to degrade significantly.
+While chained hashing can still suffer from bad hash functions, it's less sensitive to elements with nearby hash codes, which don't adversely impact the runtime.".
 
 Q2) Name one disadvantage of Chaining that isn't a problem in Linear Probing.
-According to https://www.geeksforgeeks.org/dsa/open-addressing-collision-handling-technique-in-hashing/ ,
-"Some Parts of hash table in chaining are never used [when collisions occur]... In Open addressing, a slot can be used even if an input doesn't map to it."
+According to https://stackoverflow.com/questions/23821764/why-do-we-use-linear-probing-in-hash-tables-when-there-is-separate-chaining-link ,
+"insertions into a linear probing hash table don't require any new allocations (unless you're rehashing the table),
+so in applications like network routers where memory is scarce, it's nice to know that once the table is set up,
+the elements can be placed into it with no risk of a malloc fail."
+In contrast, chaining involves a new allocation of a linked list node for each inserted object.
 
 Q3) If using Chaining, how can finding an element in the linked list be made more efficient?
 Finding an element in a linked list in a hash table can be made more efficient by
@@ -156,7 +158,7 @@ replacing the linked list with an array, hash table, or Binary Search Tree (http
 Q4) Why does Linear Probing require a three-state (Occupied, Empty, Deleted) "flag" for each cell, but Chaining does not?
 Linear probing requires a three-state (Occupied, Empty, Deleted) "flag" for each cell
 because linear probing in searching for an element checks for the element in all cells in which the element could be,
-passes by occupied cells without the element and cells from which elements were deleted, and
+passes by occupied cells with different elements and cells from which elements were deleted most recently, and
 stops after it checks an empty cell that has never been filled.
 Linear probing checks for the element of interest in all occupied cells and cells from which elements were deleted
 between the cell corresponding to the element's hash code inclusive and the nearest empty cell with a greater index inclusive.
