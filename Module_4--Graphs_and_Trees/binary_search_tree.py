@@ -41,7 +41,7 @@ class BinarySearchTree:
                     return
                 current = current.right
 
-    def help_draw(self, node: Node, prefix: str = "", is_left: bool = True):
+    def help_draw(self, node: Node, prefix: str, is_left: bool):
         if node.right:
             self.help_draw(node.right, prefix + ("│   " if is_left else "    "), False)
         print(prefix + ("└── " if is_left else "┌── ") + str(node.value))
@@ -52,46 +52,46 @@ class BinarySearchTree:
         if not self.root:
             print("<empty tree>")
             return
-        self.help_draw(self.root)
+        self.help_draw(self.root, "", True)
     
     def traverse_pre_order(self):
         '''
         Traversing a tree order pre order is useful for copying a tree.
         '''
-        out = []
+        visit_order = []
         def help_traverse_pre_order(node):
             if node:
-                out.append(node.value)
+                visit_order.append(node.value)
                 help_traverse_pre_order(node.left)
                 help_traverse_pre_order(node.right)
         help_traverse_pre_order(self.root)
-        print(f"Pre Order Traversal visit order: {out}")
+        print(f"Pre Order Traversal visit order: {visit_order}")
     
     def traverse_in_order(self):
         '''
         Traversing a tree order in order is useful for ?.
         '''
-        out = []
+        visit_order = []
         def help_traverse_in_order(node):
             if node:
                 help_traverse_in_order(node.left)
-                out.append(node.value)
+                visit_order.append(node.value)
                 help_traverse_in_order(node.right)
         help_traverse_in_order(self.root)
-        print(f"In Order Traversal visit order: {out}")
+        print(f"In Order Traversal visit order: {visit_order}")
 
     def traverse_post_order(self):
         '''
         Traversing a tree order post order is useful for deallocating a tree.
         '''
-        out = []
+        visit_order = []
         def help_traverse_post_order(node):
             if node:
                 help_traverse_post_order(node.left)
                 help_traverse_post_order(node.right)
-                out.append(node.value)
+                visit_order.append(node.value)
         help_traverse_post_order(self.root)
-        print(f"Post Order Traversal visit order: {out}")
+        print(f"Post Order Traversal visit order: {visit_order}")
     
     def conduct_breadth_first_search(self, value):
         '''
