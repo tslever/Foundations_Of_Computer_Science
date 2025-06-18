@@ -107,13 +107,13 @@ class BinarySearchTree:
             node = q.popleft()
             visit_order.append(node.value)
             if node.value == value:
-                print(f"BFS visit order: {visit_order}")
+                print(f"BFS visit order to {value}: {visit_order}")
                 return True
             if node.left:
                 q.append(node.left)
             if node.right:
                 q.append(node.right)
-        print(f"BFS visit order: {visit_order} - value not found")
+        print(f"BFS visit order to {value}: {visit_order} - value not found")
         return False
     
     def conduct_depth_first_search(self, value):
@@ -130,19 +130,20 @@ class BinarySearchTree:
             return help_conduct_depth_first_search(node.left) or help_conduct_depth_first_search(node.right)
         found = help_conduct_depth_first_search(self.root)
         if found:
-            print(f"DFS visit order: {visit_order}")
+            print(f"DFS visit order to {value}: {visit_order}")
             return True
         else:
-            print(f"DFS visit order: {visit_order} - value not found")
+            print(f"DFS visit order to {value}: {visit_order} - value not found")
             return False
 
 tree = BinarySearchTree()
-for value in (10, 5, 15, 3, 8, 7, 9, 17):
+#for value in (10, 5, 15, 3, 8, 7, 9, 17):
+for value in (776, 435, 869, 141, 700, 791, 957, 66, 450, 806, 48, 124, 42):
     tree.add_node(value)
 
 tree.draw()
 tree.traverse_pre_order() # I expect "[10, 5, 3, 8, 7, 9, 15, 17]" to be printed.
 tree.traverse_in_order() # I expect "[3, 5, 7, 8, 9, 10, 15, 17]" to be printed.
 tree.traverse_post_order() # I expect "[3, 7, 9, 8, 5, 17, 15, 10]" to be printed.
-tree.conduct_breadth_first_search(9)
-tree.conduct_depth_first_search(17)
+tree.conduct_breadth_first_search(450)
+tree.conduct_depth_first_search(450)
