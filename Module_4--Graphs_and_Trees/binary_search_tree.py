@@ -1,3 +1,27 @@
+'''
+Response to ICA 4
+
+│       ┌── 957
+│   ┌── 869
+│   │   │   ┌── 806
+│   │   └── 791
+└── 776
+    │   ┌── 700
+    │   │   └── 450
+    └── 435
+        └── 141
+            │   ┌── 124
+            └── 66
+                └── 48
+                    └── 42
+Pre Order Traversal visit order: [776, 435, 141, 66, 48, 42, 124, 700, 450, 869, 791, 806, 957]
+In Order Traversal visit order: [42, 48, 66, 124, 141, 435, 450, 700, 776, 791, 806, 869, 957]
+Post Order Traversal visit order: [42, 48, 124, 66, 141, 450, 700, 435, 806, 791, 957, 869, 776]
+BFS visit order to 450: [776, 435, 869, 141, 700, 791, 957, 66, 450]
+DFS visit order to 450: [776, 435, 141, 66, 48, 42, 124, 700, 450]
+'''
+
+
 from collections import deque
 
 
@@ -145,8 +169,8 @@ for value in (776, 435, 869, 141, 700, 791, 957, 66, 450, 806, 48, 124, 42):
     tree.add_node(value)
 
 tree.draw()
-tree.traverse_pre_order() # I expect "[10, 5, 3, 8, 7, 9, 15, 17]" to be printed.
-tree.traverse_in_order() # I expect "[3, 5, 7, 8, 9, 10, 15, 17]" to be printed.
-tree.traverse_post_order() # I expect "[3, 7, 9, 8, 5, 17, 15, 10]" to be printed.
+tree.traverse_pre_order()
+tree.traverse_in_order()
+tree.traverse_post_order()
 tree.conduct_breadth_first_search(450)
 tree.conduct_depth_first_search(450)
