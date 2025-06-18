@@ -41,15 +41,18 @@ class BinarySearchTree:
                     return
                 current = current.right
 
-    def help_draw(self, node: Node, prefix: str, is_left: bool):
+    def help_draw(self, node: Node, prefix: str, node_is_left_child: bool):
+        '''
+        prefix: str -- prefix begins every line.
+        '''
         if node.right:
-            self.help_draw(node.right, prefix + ("│   " if is_left else "    "), False)
-        print(prefix + ("└── " if is_left else "┌── ") + str(node.value))
+            self.help_draw(node.right, prefix + ("│   " if node_is_left_child else "    "), False)
+        print(prefix + ("└── " if node_is_left_child else "┌── ") + str(node.value))
         if node.left:
-            self.help_draw(node.left, prefix + ("    " if is_left else "│   "), True)
+            self.help_draw(node.left, prefix + ("    " if node_is_left_child else "│   "), True)
     
     def draw(self):
-        if not self.root:
+        if self.root is None:
             print("<empty tree>")
             return
         self.help_draw(self.root, "", True)
