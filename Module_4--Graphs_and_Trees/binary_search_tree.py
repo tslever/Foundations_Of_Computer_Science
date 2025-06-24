@@ -185,19 +185,23 @@ class BinarySearchTree:
         self.help_draw(self.root, "", True)
     
 
-    def find(self, value: int) -> bool:
+    def find(self, value: int) -> Node | None:
             '''
             Return True if and only if value is present in the tree.
             Worst case time complexity is `O(h)`, where `h` is the height of the tree, or
             `O[log(n)]` in a balanced tree and `O(n)` in an unbalanced tree of elements that were sorted in order.
             Stop as soon as one subtree that possibly contains value is known.
             '''
+            value_order = []
             current = self.root
             while current:
                 if value == current.value:
-                    return True
+                    value_order.append(current.value)
+                    print(f"find visit order to {value}: {value_order}")
+                    return current
+                value_order.append(current.value)
                 current = current.left if value < current.value else current.right
-            return False
+            return None
 
 
     def help_draw(self, node: Node, prefix: str, node_is_left_child: bool):
@@ -267,3 +271,4 @@ tree.conduct_breadth_first_search(450)
 tree.conduct_depth_first_search_in_order(450)
 tree.conduct_depth_first_search_post_order(450)
 tree.conduct_depth_first_search_pre_order(450)
+tree.find(450)
