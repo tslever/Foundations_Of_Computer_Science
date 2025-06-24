@@ -52,27 +52,29 @@ class BinarySearchTree:
     
 
     def add_node(self, value):
-        if self.root is None:
-            self.root = Node(value)
-            return
+        '''
+        Insert value while preserving BST order.
+        Duplicate values go left.
+        '''
+        parent = None
         current = self.root
-        while True:
-            if value <= current.value:
-                if current.left is None:
-                    current.left = Node(value)
-                    return
-                current = current.left
-            else:
-                if current.right is None:
-                    current.right = Node(value)
-                    return
-                current = current.right
+        while current:
+            parent = current
+            current = current.left if value <= current.value else current.right
+        new_node = Node(value)
+        if parent is None:
+            self.root = new_node
+        elif value <= parent.value:
+            parent.left = new_node
+        else:
+            parent.right = new_node
     
 
     def conduct_breadth_first_search(self, value):
         '''
         Breadth first search searches 1 level at a time.
         Breadth first search is useful for finding elements close to the root.
+        Worst case time complexity in a Binary Search Tree is `O(n)` due to walking every node until node with value is found or all nodes are evaluated.
         '''
         if not self.root:
             print("Tree is empty.")
@@ -92,25 +94,87 @@ class BinarySearchTree:
         print(f"BFS visit order to {value}: {visit_order} - value not found")
         return False
     
-    
-    def conduct_depth_first_search(self, value):
+
+    def conduct_depth_first_search_in_order(self, value):
         '''
-        Depth first search is useful for finding elements far from the root.
+        Worst case time complexity in a Binary Search Tree is `O(n)` due to walking every node until node with value is found or all nodes are evaluated.
         '''
         visit_order = []
-        def help_conduct_depth_first_search(node):
+
+        def help_conduct_depth_first_search_in_order(node):
+            if not node:
+                return None
+            found = help_conduct_depth_first_search_in_order(node.left)
+            if found:
+                return found
+            visit_order.append(node.value)
+            if node.value == value:
+                return node
+            return help_conduct_depth_first_search_in_order(node.right)
+
+        found = help_conduct_depth_first_search_in_order(self.root)
+        if found:
+            print(f"DFS in order visit order to {value}: {visit_order}")
+            return True
+        else:
+            print(f"DFS in order visit order to {value}: {visit_order} – value not found")
+            return False
+
+
+    def conduct_depth_first_search_post_order(self, value):
+        '''
+        Conduct depth first search post order to find value.
+        Worst case time complexity in a Binary Search Tree is `O(n)` due to walking every node until node with value is found or all nodes are evaluated.
+        '''
+        visit_order = []
+
+        def help_conduct_depth_first_search_post_order(node):
+            if not node:
+                return None
+            found = help_conduct_depth_first_search_post_order(node.left)
+            if found:
+                return found
+            found = help_conduct_depth_first_search_post_order(node.right)
+            if found:
+                return found
+            visit_order.append(node.value)
+            if node.value == value:
+                return node
+            return None
+
+        found = help_conduct_depth_first_search_post_order(self.root)
+        if found:
+            print(f"DFS post order visit order to {value}: {visit_order}")
+            return True
+        else:
+            print(f"DFS post order visit order to {value}: {visit_order} - value not found")
+            return False
+
+
+    def conduct_depth_first_search_pre_order(self, value):
+        '''
+        Depth first search is useful for finding elements far from the root.
+        Worst case time complexity in a Binary Search Tree is `O(n)` due to walking every node until node with value is found or all nodes are evaluated.
+        '''
+        visit_order = []
+
+        def help_conduct_depth_first_search_pre_order(node):
+            '''
+            Search pre order for a node with a value defined in the parent's scope.
+            '''
             if not node:
                 return None
             visit_order.append(node.value)
             if node.value == value:
                 return node
-            return help_conduct_depth_first_search(node.left) or help_conduct_depth_first_search(node.right)
-        found = help_conduct_depth_first_search(self.root)
+            return help_conduct_depth_first_search_pre_order(node.left) or help_conduct_depth_first_search_pre_order(node.right)
+        
+        found = help_conduct_depth_first_search_pre_order(self.root)
         if found:
-            print(f"DFS visit order to {value}: {visit_order}")
+            print(f"DFS pre order visit order to {value}: {visit_order}")
             return True
         else:
-            print(f"DFS visit order to {value}: {visit_order} - value not found")
+            print(f"DFS pre order visit order to {value}: {visit_order} - value not found")
             return False
 
 
@@ -120,6 +184,21 @@ class BinarySearchTree:
             return
         self.help_draw(self.root, "", True)
     
+
+    def find(self, value: int) -> bool:
+            '''
+            Return True if and only if value is present in the tree.
+            Worst case time complexity is `O(h)`, where `h` is the height of the tree, or
+            `O[log(n)]` in a balanced tree and `O(n)` in an unbalanced tree of elements that were sorted in order.
+            Stop as soon as one subtree that possibly contains value is known.
+            '''
+            current = self.root
+            while current:
+                if value == current.value:
+                    return True
+                current = current.left if value < current.value else current.right
+            return False
+
 
     def help_draw(self, node: Node, prefix: str, node_is_left_child: bool):
         '''
@@ -185,4 +264,6 @@ tree.traverse_pre_order()
 tree.traverse_in_order()
 tree.traverse_post_order()
 tree.conduct_breadth_first_search(450)
-tree.conduct_depth_first_search(450)
+tree.conduct_depth_first_search_in_order(450)
+tree.conduct_depth_first_search_post_order(450)
+tree.conduct_depth_first_search_pre_order(450)
