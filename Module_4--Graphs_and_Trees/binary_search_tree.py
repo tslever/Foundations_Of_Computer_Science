@@ -37,9 +37,11 @@ class Node:
         #self.children = []
         self.value = value
     
+
     def add_left(self, value):
         self.left = Node(value)
     
+
     def add_right(self, value):
         self.right = Node(value)
 
@@ -48,6 +50,7 @@ class BinarySearchTree:
     def __init__(self):
         self.root: Node | None = None
     
+
     def add_node(self, value):
         if self.root is None:
             self.root = Node(value)
@@ -64,62 +67,8 @@ class BinarySearchTree:
                     current.right = Node(value)
                     return
                 current = current.right
+    
 
-    def help_draw(self, node: Node, prefix: str, node_is_left_child: bool):
-        '''
-        prefix: str -- prefix begins every line.
-        '''
-        if node.right:
-            self.help_draw(node.right, prefix + ("│   " if node_is_left_child else "    "), False)
-        print(prefix + ("└── " if node_is_left_child else "┌── ") + str(node.value))
-        if node.left:
-            self.help_draw(node.left, prefix + ("    " if node_is_left_child else "│   "), True)
-    
-    def draw(self):
-        if self.root is None:
-            print("<empty tree>")
-            return
-        self.help_draw(self.root, "", True)
-    
-    def traverse_pre_order(self):
-        '''
-        Traversing a tree order pre order is useful for copying a tree.
-        '''
-        visit_order = []
-        def help_traverse_pre_order(node):
-            if node:
-                visit_order.append(node.value)
-                help_traverse_pre_order(node.left)
-                help_traverse_pre_order(node.right)
-        help_traverse_pre_order(self.root)
-        print(f"Pre Order Traversal visit order: {visit_order}")
-    
-    def traverse_in_order(self):
-        '''
-        Traversing a tree order in order is useful for ?.
-        '''
-        visit_order = []
-        def help_traverse_in_order(node):
-            if node:
-                help_traverse_in_order(node.left)
-                visit_order.append(node.value)
-                help_traverse_in_order(node.right)
-        help_traverse_in_order(self.root)
-        print(f"In Order Traversal visit order: {visit_order}")
-
-    def traverse_post_order(self):
-        '''
-        Traversing a tree order post order is useful for deallocating a tree.
-        '''
-        visit_order = []
-        def help_traverse_post_order(node):
-            if node:
-                help_traverse_post_order(node.left)
-                help_traverse_post_order(node.right)
-                visit_order.append(node.value)
-        help_traverse_post_order(self.root)
-        print(f"Post Order Traversal visit order: {visit_order}")
-    
     def conduct_breadth_first_search(self, value):
         '''
         Breadth first search searches 1 level at a time.
@@ -143,6 +92,7 @@ class BinarySearchTree:
         print(f"BFS visit order to {value}: {visit_order} - value not found")
         return False
     
+    
     def conduct_depth_first_search(self, value):
         '''
         Depth first search is useful for finding elements far from the root.
@@ -162,6 +112,68 @@ class BinarySearchTree:
         else:
             print(f"DFS visit order to {value}: {visit_order} - value not found")
             return False
+
+
+    def draw(self):
+        if self.root is None:
+            print("<empty tree>")
+            return
+        self.help_draw(self.root, "", True)
+    
+
+    def help_draw(self, node: Node, prefix: str, node_is_left_child: bool):
+        '''
+        prefix: str -- prefix begins every line.
+        '''
+        if node.right:
+            self.help_draw(node.right, prefix + ("│   " if node_is_left_child else "    "), False)
+        print(prefix + ("└── " if node_is_left_child else "┌── ") + str(node.value))
+        if node.left:
+            self.help_draw(node.left, prefix + ("    " if node_is_left_child else "│   "), True)
+
+    
+    def traverse_in_order(self):
+        '''
+        Traversing a tree order in order is useful for
+        traversing a Binary Search Tree so that nodes are visited in sorted order.
+        '''
+        visit_order = []
+        def help_traverse_in_order(node):
+            if node:
+                help_traverse_in_order(node.left)
+                visit_order.append(node.value)
+                help_traverse_in_order(node.right)
+        help_traverse_in_order(self.root)
+        print(f"In Order Traversal visit order: {visit_order}")
+
+
+    def traverse_post_order(self):
+        '''
+        Traversing a tree order post order is useful for deallocating a tree.
+        '''
+        visit_order = []
+        def help_traverse_post_order(node):
+            if node:
+                help_traverse_post_order(node.left)
+                help_traverse_post_order(node.right)
+                visit_order.append(node.value)
+        help_traverse_post_order(self.root)
+        print(f"Post Order Traversal visit order: {visit_order}")
+    
+
+    def traverse_pre_order(self):
+        '''
+        Traversing a tree order pre order is useful for copying a tree.
+        '''
+        visit_order = []
+        def help_traverse_pre_order(node):
+            if node:
+                visit_order.append(node.value)
+                help_traverse_pre_order(node.left)
+                help_traverse_pre_order(node.right)
+        help_traverse_pre_order(self.root)
+        print(f"Pre Order Traversal visit order: {visit_order}")
+
 
 tree = BinarySearchTree()
 #for value in (10, 5, 15, 3, 8, 7, 9, 17):
