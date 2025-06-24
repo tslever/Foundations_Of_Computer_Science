@@ -178,6 +178,38 @@ class BinarySearchTree:
             return False
 
 
+    def delete(self, value: int) -> bool:
+        '''
+        Remove the node with given value.
+        Return True if deletion succeeded or False if value not found.
+        '''
+        def help_delete(node: Node | None, target: int) -> Node | None:
+            if not node:
+                return None
+            if target < node.value:
+                node.left = help_delete(node.left, target)
+            elif target > node.value:
+                node.right = help_delete(node.right, target)
+            else:
+                if not node.left:
+                    return node.right
+                if not node.right:
+                    return node.left
+                # When the tree has 2 children, replace a deleted node with its in order successor;
+                # i.e., the node with the smallest value larger than the value of the node deleted.
+                succ = node.right
+                while succ.left:
+                    succ = succ.left
+                node.value = succ.value
+                node.right = help_delete(node.right, succ.value)
+            return node
+
+        if not self.find(value):
+            return False
+        self.root = help_delete(self.root, value)
+        return True
+
+
     def draw(self):
         if self.root is None:
             print("<empty tree>")
@@ -272,3 +304,5 @@ tree.conduct_depth_first_search_in_order(450)
 tree.conduct_depth_first_search_post_order(450)
 tree.conduct_depth_first_search_pre_order(450)
 tree.find(450)
+tree.delete(450)
+tree.draw()
