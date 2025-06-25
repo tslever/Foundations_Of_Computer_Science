@@ -204,7 +204,7 @@ class BinarySearchTree:
                 node.right = help_delete(node.right, succ.value)
             return node
 
-        if not self.find(value):
+        if not self.find_node_with(value):
             return False
         self.root = help_delete(self.root, value)
         return True
@@ -217,23 +217,42 @@ class BinarySearchTree:
         self.help_draw(self.root, "", True)
     
 
-    def find(self, value: int) -> Node | None:
+    def find_node_with(self, target_value: int) -> Node | None:
             '''
             Return True if and only if value is present in the tree.
             Worst case time complexity is `O(h)`, where `h` is the height of the tree, or
             `O[log(n)]` in a balanced tree and `O(n)` in an unbalanced tree of elements that were sorted in order.
             Stop as soon as one subtree that possibly contains value is known.
             '''
-            value_order = []
-            current = self.root
-            while current:
-                if value == current.value:
-                    value_order.append(current.value)
-                    print(f"find visit order to {value}: {value_order}")
-                    return current
-                value_order.append(current.value)
-                current = current.left if value < current.value else current.right
+            list_of_values = []
+            current_node = self.root
+            while current_node != None:
+                if target_value == current_node.value:
+                    list_of_values.append(current_node.value)
+                    print(f"find_node_with visit order to {target_value}: {list_of_values}")
+                    return current_node
+                list_of_values.append(current_node.value)
+                current_node = current_node.left if target_value < current_node.value else current_node.right
             return None
+
+
+    def is_in_tree_node_with(self, target_value: int) -> bool:
+            '''
+            Return True if and only if value is present in the tree.
+            Worst case time complexity is `O(h)`, where `h` is the height of the tree, or
+            `O[log(n)]` in a balanced tree and `O(n)` in an unbalanced tree of elements that were sorted in order.
+            Stop as soon as one subtree that possibly contains value is known.
+            '''
+            list_of_values = []
+            current_node = self.root
+            while current_node != None:
+                if target_value == current_node.value:
+                    list_of_values.append(current_node.value)
+                    print(f"is_in_tree_node_with visit order to {target_value}: {list_of_values}")
+                    return True
+                list_of_values.append(current_node.value)
+                current_node = current_node.left if target_value < current_node.value else current_node.right
+            return False
 
 
     def help_draw(self, node: Node, prefix: str, node_is_left_child: bool):
@@ -303,6 +322,7 @@ tree.conduct_breadth_first_search(450)
 tree.conduct_depth_first_search_in_order(450)
 tree.conduct_depth_first_search_post_order(450)
 tree.conduct_depth_first_search_pre_order(450)
-tree.find(450)
+tree.find_node_with(450)
+tree.is_in_tree_node_with(450)
 tree.delete(450)
 tree.draw()
