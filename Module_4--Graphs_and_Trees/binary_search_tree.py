@@ -47,8 +47,10 @@ class Node:
 
 
 class BinarySearchTree:
+
     def __init__(self):
         self.root: Node | None = None
+        self.number_of_nodes = 0
     
 
     def add_node(self, value):
@@ -68,6 +70,7 @@ class BinarySearchTree:
             parent.left = new_node
         else:
             parent.right = new_node
+        self.number_of_nodes += 1
     
 
     def conduct_breadth_first_search(self, value):
@@ -178,6 +181,16 @@ class BinarySearchTree:
             return False
 
 
+    def count_nodes(self) -> int:
+        '''
+        Return the total number of nodes in this tree.
+        This method has a worst case time complexity of `O(n)`, where n is the number of nodes.
+        This method must visit every node.
+        '''
+        print(f"Number of nodes in tree is {self.number_of_nodes}.")
+        return self.help_count_nodes(self.root)
+
+
     def delete(self, value: int) -> bool:
         '''
         Remove the node with given value.
@@ -207,6 +220,7 @@ class BinarySearchTree:
         if not self.find_node_with(value):
             return False
         self.root = help_delete(self.root, value)
+        self.number_of_nodes -= 1
         return True
 
 
@@ -234,6 +248,17 @@ class BinarySearchTree:
                 list_of_values.append(current_node.value)
                 current_node = current_node.left if target_value < current_node.value else current_node.right
             return None
+    
+
+    def get_number_of_nodes(self) -> int:
+        print(f"Number of nodes in tree is {self.number_of_nodes}.")
+        return self.number_of_nodes
+
+
+    def help_count_nodes(self, node: Node | None) -> int:
+        if node is None:
+            return 0
+        return 1 + self.help_count_nodes(node.left) + self.help_count_nodes(node.right)
 
 
     def is_in_tree_node_with(self, target_value: int) -> bool:
@@ -326,3 +351,5 @@ tree.find_node_with(450)
 tree.is_in_tree_node_with(450)
 tree.delete(450)
 tree.draw()
+tree.get_number_of_nodes()
+tree.count_nodes()
