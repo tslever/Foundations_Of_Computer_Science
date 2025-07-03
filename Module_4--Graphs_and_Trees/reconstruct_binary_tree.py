@@ -1,47 +1,62 @@
-from typing import List, Optional
-
-
 class Node:
-    """Simple binary‐tree node."""
-    def __init__(self, val: str):
-        self.val: str = val
-        self.left: Optional["Node"] = None
-        self.right: Optional["Node"] = None
+
+    def __init__(self, value: str):
+        self.value: str = value
+        self.left: Node | None = None
+        self.right: Node | None = None
 
 
-def build_tree(preorder: List[str], inorder: List[str]) -> Optional[Node]:
-    """
-    Reconstruct a binary tree from preorder and inorder traversals.
-    preorder[0] is always the current subtree’s root.
-    """
-    if not preorder:                      # base case: empty subtree
+def build_tree(
+    list_of_nodes_pre_order: list[str],
+    list_of_nodes_in_order:  list[str],
+    depth: int
+) -> Node | None:
+    '''
+    Reconstruct a binary tree from traversals pre order and in order.
+    '''
+
+    indent = "  " * depth
+
+    if not list_of_nodes_pre_order:
+        print(f"{indent}List of nodes pre order is empty.")
         return None
 
-    root_val = preorder[0]
-    root = Node(root_val)
+    value_of_root_node = list_of_nodes_pre_order[0]
+    print(f"{indent}The root is the first element visited pre order, {value_of_root_node}.")
 
-    # Split inorder list at the root to get left vs right subtrees
-    root_index = inorder.index(root_val)
-    in_left  = inorder[:root_index]
-    in_right = inorder[root_index + 1:]
+    print(f"{indent}We split the list of nodes in order at the root to find nodes to the left of the root visited before the root and nodes to the right of the root visited after the root.")
+    root_index = list_of_nodes_in_order.index(value_of_root_node)
+    list_of_left_nodes_in_order  = list_of_nodes_in_order[:root_index]
+    list_of_right_nodes_in_order = list_of_nodes_in_order[root_index + 1:]
+    print(f"{indent}List of left nodes in order: {list_of_left_nodes_in_order}")
+    print(f"{indent}List of right nodes in order: {list_of_right_nodes_in_order}")
 
-    # Number of nodes in the left subtree = len(in_left)
-    pre_left  = preorder[1 : 1 + len(in_left)]
-    pre_right = preorder[1 + len(in_left):]
+    print(f"{indent}We find the number of elements to the left of the root.")
+    number_of_nodes_to_left_of_root = len(list_of_left_nodes_in_order)
+    print(f"{indent}Number of elements to left of root: {number_of_nodes_to_left_of_root}")
 
-    # Recursively build subtrees
-    root.left  = build_tree(pre_left,  in_left)
-    root.right = build_tree(pre_right, in_right)
+    print(f"{indent}We find the first {number_of_nodes_to_left_of_root} children of the root pre order.")
+    sublist_of_first_children_of_root_pre_order  = list_of_nodes_pre_order[1 : 1 + number_of_nodes_to_left_of_root]
+    sublist_of_remaining_children_of_root_pre_order = list_of_nodes_pre_order[1 + number_of_nodes_to_left_of_root :]
+    print(f"{indent}List of first {number_of_nodes_to_left_of_root} children of the root pre order: {sublist_of_first_children_of_root_pre_order}")
+    print(f"{indent}List of remaining children of the root pre order: {sublist_of_remaining_children_of_root_pre_order}")
+
+    print(f"{indent}We create a tree with root {value_of_root_node}.")
+    root = Node(value_of_root_node)
+
+    print(f"{indent}We assign the left child of the root to be the output of building a tree for the list of the first {number_of_nodes_to_left_of_root} children of the root pre order and the list of the left nodes of the root in order.")
+    root.left  = build_tree(sublist_of_first_children_of_root_pre_order, list_of_left_nodes_in_order, depth + 1)
+
+    print(f"{indent}We assign the right child of the root to be the output of building a tree for the list of the remaining children of the root pre order and the list of the right nodes of the root in order.")
+    root.right = build_tree(sublist_of_remaining_children_of_root_pre_order, list_of_right_nodes_in_order, depth + 1)
 
     return root
 
-def print_tree(node: Optional[Node], prefix: str = "", is_left: bool = True) -> None:
-    """
-    Pretty-print the tree sideways:
-        right child
-    root
-        left child
-    """
+
+def print_tree(node: Node | None,
+               prefix: str = "",
+               is_left: bool = True) -> None:
+    """Pretty-print the tree sideways."""
     if node is None:
         return
 
@@ -50,19 +65,24 @@ def print_tree(node: Optional[Node], prefix: str = "", is_left: bool = True) -> 
                    prefix + ("│   " if is_left else "    "),
                    False)
 
-    # Current node
     connector = "└── " if is_left else "┌── "
-    print(prefix + connector + node.val)
+    print(prefix + connector + node.value)
 
     if node.left:
         print_tree(node.left,
                    prefix + ("    " if is_left else "│   "),
                    True)
 
-# --- Example --------------------------------------------------------------
+
+# --------------------------------------------------------------------------
+# Example
+# --------------------------------------------------------------------------
 
 preorder = ['G', 'B', 'A', 'D', 'C', 'E', 'F', 'I', 'H', 'K']
 inorder  = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K']
 
-root = build_tree(preorder, inorder)
+print("=== Narrated reconstruction ===")
+root = build_tree(preorder, inorder, 0)
+
+print("\n=== ASCII sketch of the rebuilt tree ===")
 print_tree(root)
