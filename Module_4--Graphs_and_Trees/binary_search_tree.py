@@ -336,7 +336,8 @@ class BinarySearchTree:
 
 tree = BinarySearchTree()
 #for value in (10, 5, 15, 3, 8, 7, 9, 17):
-for value in (776, 435, 869, 141, 700, 791, 957, 66, 450, 806, 48, 124, 42):
+#for value in (776, 435, 869, 141, 700, 791, 957, 66, 450, 806, 48, 124, 42):
+for value in (6, 1, 9, 5, 3, 8, 2, 4):
     tree.add_node(value)
 
 tree.draw()
