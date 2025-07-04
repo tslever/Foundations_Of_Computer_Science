@@ -4,7 +4,7 @@ Selection Sort
 Time complexity is O(n^2) in best, average, and worst cases.
 
 • Procedure:
-    • Algorithm works by selection the smallest unsorted item and then swapping it with the item in the next position to be filled
+    • Algorithm works by selecting the smallest unsorted item and then swapping it with the item in the next position to be filled
 • Pseudocode:
     • Look through the entire array for the smallest element
     • Swap it with the first element of the array
