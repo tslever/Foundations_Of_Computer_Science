@@ -218,6 +218,7 @@ if __name__ == "__main__":
 
     heap = MinHeap()
 
+    '''
     for value in (5, 7, 15, 8, 11, 17, 16, 9):
         heap.add(value)
 
@@ -245,3 +246,11 @@ if __name__ == "__main__":
     print("\nArray view:")
     heap.display_array_and_parents()
     print("\nFinal in-order traversal:", heap.in_order())
+    '''
+
+    for value in (5, 20, 30, 31, 60, 40):
+        heap.add(value)
+    heap.draw()
+
+    heap.delete()
+    heap.draw()
