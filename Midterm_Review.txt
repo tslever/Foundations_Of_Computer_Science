@@ -1,0 +1,572 @@
+Module 5 - Midterm Review
+
+Sample Problems
+
+Module 0:
+
+Propositional Logic
+
+Given the propositions p: "It is raining" and q: "The grass is wet", express the following statement in terms of p and q: "It is not raining and the grass is not wet."
+
+(not p) and (not q)
+
+Construct a truth table for the logical expression (p -> q) and (q -> p).
+
+p q p->q q->p (p->q) and (q->p)
+T T T    T    T
+T F F    T    F
+F T T    F    F
+F F T    T    T
+
+Predicate Logic
+
+Which of the following is the correct logical form of the statement: "For all x, if x is a bird then x can fly."?
+
+For all x (Bird(x) -> Fly(x))
+
+Given the predicates F(x): "x is a fruit" and S(x): "x is sweet", write the logical form of the statement "All fruits are sweet.".
+
+For all x (Fruit(x) -> Sweet(x))
+
+Set Theory
+
+Given A = {2, 4, 6, 8, 10} and B = {1, 2, 3, 4, 5}, find A intersect B.
+
+{2, 4}
+
+If A = {1, 2, 3}, B = {2, 3, 4}, and C = {3, 4, 5}, then (A intersect B) union C is:
+
+I = A intersect B = {2, 3}.
+I union C = {2, 3, 4, 5}.
+
+If A = {x: x is a prime number less than 10} and B = {x: x is an odd number less than 10}, find A intersect B.
+
+A = {2, 3, 5, 7}
+B = {1, 3, 5, 7, 9}
+A intersect B = {3, 5, 7}
+
+Module 1:
+
+Big O Notation
+
+Which of the following functions grows the fastest as n becomes larger?
+
+O(n)
+O(n^2)
+O[log(n)]
+O[nlog(n)]
+
+O(n^2) grows the fastest as n becomes larger. n^2 increases at a rate proportional to the square of n, whereas the others increase at a rate proportional to n or slower.
+
+Suppose you have two algorithms. The first has time complexity O(n^2) and the second has time complexity O[nlog(n)]. For what sizes of n is the first algorithm likely to be faster?
+
+The first algorithm is likely to be faster when n is small and, for upper bound of first algorithm cn^2 and upper bound of second algorithm dnlog(n), c is far less than d. In this case, find where cn^2 < dnlog_2(n) => n < d/c log_2(n). Asymptotically, an algorithm with time function in O[nlog(n)] is smaller than an algorithm with a time function in O(n^2).
+
+
+Consider the following pseudo code:
+for i = 1 to n
+    for j = 1 to n
+        operation
+What is the time complexity of this code snippet in terms of Big O notation?
+
+for i = 1 to n: There is 1 iteration for each n. Time function / number of steps is T(n) = cn.
+    for j = 1 to n: Considering just this loop, there is 1 iteration for each n; T(n) = dn. This loop is run n times. Considering the outer loop, there are n^2 iterations; T(n) = fn^2.
+        operation: Considering just this operation, T(n) = g. Considering the inner loop, T(n) = hn. Considering both loops, T(n) = kn^2.
+
+The time complexity of this code snippet is O(cn + fn^2 + kn^2) = O(n^2).
+
+Explain why an algorithm that solves a problem in O[nlog(n)] time is considered more efficient than an algorithm that solves a problem in O(n^2) time for large inputs.
+
+The growth rate of nlog(n) is less than n^2 as n becomes large. The O(nlog(n)) algorithm is faster than the O(n^2) algorithm for large n.
+
+O[f(n)] time is an order class that represents a set of functions that are asymptotically no larger than a constant multiple of f(n). O[nlog(n)] represents a set of functions that are asymptotically no larger than cnlog(n), where c is a positive constant. O(n^2) represents a set of functions that are asymptotically no larger than dn^2, where d is a positive constant. Because cnlog(n) becomes less than dn^2 as n approaches infinity, one of largest functions in O[nlog(n)] represents fewer basic operations for large n than one of the largest functions in O(n^2), and an algorithm that solves a problem in O[nlog(n)] time is considered more efficient than an algorithm that solves a problem in O(n^2) time for large inputs.
+
+Consider the following pseudo code:
+i = n
+while i > 1
+    operation
+    i = i / 2
+What is the time complexity of this code snippet in terms of Big O notation?
+
+i is halved in each iteration. The number of iterations is proportional to the number of times n can be divided by 2 before it becomes 1, which is log_2(n).
+
+i = n: a steps
+while i > 1: compare n = n/2^0 to 1, then n/2 = n/2^1, then n/4 = n/2^2, ..., then about 1 = n/2^floor(log_2(n)), then about 1 = n/2^ceil(log_2(n)) in worst case. about blog_2(n) + 1 steps.
+    operation: c steps per iteration; clog_2(n) + 1 steps total.
+    i = i / 2: d steps per iteration; dlog_2(n) + 1 steps total.
+T(n) = a + (blog_2(n) + 1) + (clog_2(n) + 1) + (dlog_2(n) + 1) = g + flog_2(n) <= some hlog_2(n) as n approaches infinity.
+Time complexity is O(log_2(n)).
+
+Explain how the concept of Big O notation can help in choosing between different data structures or algorithms for a specific task.
+
+Big O provides an upper bound on the time complexity of an algorithm, allowing us to quantify its worst-case performance as a function of the input size. This enables us to compare the efficiency of different algorithms or data structures for a specific task, particularly for large inputs. By considering the Big O notation, we can make informed decisions about which algorithm or data structure is likely to perform best for our specific needs and constraints.This 
+
+Big O notation describes how the amount of space in data structures and/or the number of basic operations in algorithms grows with the number of elements being processed in the worst case. Let f(n) represent the number of basic operations vs. number of elements. O[f(n)] is the set of functions that grow no faster than a constant multiple of f(n). Big O notation describes general, asymptotic behavior of algorithms as number of elements tends to infinity, allowing comparing algorithms in terms of large scale behavior. Big O notation helps identify dominant processes and the number of operations for those processes as a function of number of elements being processed. For example, multiple sorting algorithms have time complexities O(n^2) and require cn^2 operations; merge sort has time complexity O(nlog(n)) and requires dnlog(n) operations. For sorting large groups of elements, I would use merge sort.
+
+Which of the following search algorithms is most efficient for finding a specific value in a sorted list of billions of items?
+
+Binary Search
+
+Binary Search through a sorted list repeatedly examines the midpoints of a search interval and halves the search interval until a target is found or the search interval is empty. The time complexity of Binary Search is O[log(n)]. For a list with 1 trillion elements, the search space is halved about 40 times. Linear search might examine all 1 trillion elements. Breadth First Search and Depth First Search traverse graphs and identify each node.
+
+Here is a snippet of code. Identify which search algorithm it represents and explain its time complexity:
+     l = 0
+     r = len(array) - 1
+     while l <= r:
+        mid = (l + r) // 2
+        if array[mid] < target:
+           l = mid + 1
+        elif array[mid] > target:
+           r = mid - 1
+        else:
+           return mid
+      return -1
+This snippet represents Binary Search with time complexity O[log(n)].
+
+What is the worst case time complexity of a binary search in a sorted array of n elements?
+
+a. O(1)
+b. O(log n)
+c. O(n)
+d. O(n log n)
+
+In the worst case, binary search in a sorted array of n elements still examines the midpoints of a search interval and halves the search interval until the target is found or the search interval is empty. The maximum number of occurrences of halving is about log_2(n). The worst case time complexity of a binary search in a sorted array of n elements in O[log(n)].
+
+In a binary search algorithm, what would you do if the target value is greater than the value at the middle index?
+
+a. Search in the left half of the list
+b. Search in the right half of the list
+c. Stop the search as the item is not present
+d. Repeat the search with the full list
+
+If the target value is greater than the value at the middle index, then, in an group of elements ascending from left to right, the target value lies to the right of the middle element. The left most element in the search interval becomes the element to the right of the previously examined middle element. Binary Search continues searching in the right half of the list.
+
+Sorting Algorithms
+
+Which of the following sorting algorithms uses a divide and conquer strategy?
+
+Quick Sort
+Bubble Sort
+Selection Sort
+Insertion Sort
+
+Quick Sort uses a divide and conquer strategy. Quick Sort chooses a pivot, divides an array of elements to be sorted into a subarray of elements less than the pivot and a subarray of elements greater than the pivot, and recursively applies (conquers) the same process to each subarray. Combining is not required as partitioning is done in place and the results of the base case, next largest case, etc. are in order in the main array.
+
+You are given two lists of integers, each sorted in ascending order. How would you efficiently combine these two lists into one sorted list without using any built-in sort function?
+
+I would start from the beginning of each list, compare elements, and add the smaller one to the result list. I would move the pointer of the list from which the element was taken one step forward. I would repeat the process until all elements from both lists are in the result list.
+
+I would efficiently combine these 2 lists sorted in ascending order A and B into one sorted list C by merging the lists in the manner of Merge Sort. I would define indices i and j representing present positions in each list as 0 initially. I would define C as an empty list.
+
+While i is less than the length of A and j is less than the length of B, I would examine the element of A at position i, a, and the element of B at position j, b. If a were less than or equal to b, I would add a to the list and increment i. Otherwise, I would add b to the list and increment j. Regardless, the smaller of a and b will be added to C.
+
+After all elements in A have been examined or all elements of B have been examined, I would add any remaining elements in A to C in their existing sorted order and add any remaining elements in B to C in their existing sorted order.
+
+The time complexity of merging is O(m + n), or O(n) if m and n are approximately equal, because each element in each of A and B needs to be examined.
+
+The space complexity of merging is O(m + n) if C is a new list.
+
+Consider the following array: [5, 1, 4, 2, 8]. What would be the state of the array after the first pass of a Bubble Sort algorithm? After the second pass?
+
+In Bubble Sort, we repeatedly step through the list, compare adjacent elements, and swap them if they are in the wrong order. The pass through the list is repeated until the list is sorted.
+
+After 1 pass: [1, 5, 2, 4, 8]
+After 2 passes: [1, 2, 5, 4, 8]
+
+Module 3
+
+Hash Tables
+
+You are given a hash table with a fixed size of 100 slots. If the table receives 110 entries, what issues could arise and how would you solve these problems?
+
+The average time complexities of adding elements to a hash table, finding elements in a hash table, and removing elements from a hash table are O(1).
+The load factor of a hash table is the ratio of the number of elements n stored in the hash table to the number of slots in the hash table m.
+
+If the hash table uses linear probing, the table would need to be resized to accommodate 110 entries.
+If the hash table uses chaining but doesn't resize, at least 10 elements will be added to chains already with elements, moving average case time complexity toward O(n/m) and worst case time complexity toward O(n). Resizing reduces the probability of collisions.
+
+If the hash table resizes once the hash table has reached 0.7 or so / has received about 70 elements, the time complexity of resizing is O(n), where n is the number of elements that were stored in the hash table.
+
+As the load factor goes from 0 to 0.7, collisions in adding and finding elements become more and more likely.
+If the hash table uses probing, the number of slots examined in finding an open slot or finding an element increases toward a maximum of n. Worst case time complexity is O(n).
+If the hash table uses chaining, the number of nodes in a chain examined in finding the end of the chain or finding an element increases toward a maximum of n. Worst case time complexity is O(n) and average case time complexity is O(n / m).
+
+Our goal is to keep the average case time complexity of adding and finding as O(1) and far the worst case time complexity of O(n).
+Resizing is important.
+The hash function of the hash table could be improved to minimize collisions.
+The load factor threshold could be lowered if search efficiency is a priority or raised if adding efficiency is a priority.
+
+You are implementing a user database for a new software application. Each user has a unique username. Would a hash table be a good choice for this application? Justify your answer.
+
+Yes and no. Username keys are easy to hash. User information would be the values. Using a hash table would allow adding / creating, finding / retrieving, and deleting exact usernames with average case time complexities of O(1). Tables without many users may waste space. Resizing a hash table has a time complexity of O(n). Finding in balanced trees would be better to prevent random finding and when usernames need to be arranged in order. Hash tables form the basis of dictionaries in python.
+
+In the context of hash tables, what does the load factor represent?
+
+a. The number of collisions
+b. The ratio of the number of entries to the number of slots
+c. The amount of memory used by the hash table
+d. The time complexity of inserting an entry
+
+The load factor of a hash table is the ratio of the number of elements n stored in the hash table to the number of slots in the hash table m. The load factor measures the fullness of a hash table, is compared to a threshold, and is used to determine when to resize a hash table. The load factor is also used in determining the average case time complexity of adding and finding elements in hash tables with linear probing and chaining. A hash table with a relatively high load factor is likely to have collisions and decreased performance.
+
+When should a hash table be resized?
+
+a. When the load factor is below 0.5
+b. When the load factor is above 0.7
+c. When the hash table is full
+d. When a collision occurs
+
+A hash table should be resized when the load factor is above 0.7 to help reduce likelihood of collisions and maintain performance.
+
+Given the following sequence of keys to be inserted into a hash table: 5, 29, 20, 0, 21, 15. The hash table uses hash function h(v) = v mod 10 and linear probing to handle collisions. Show the state of the hash table after all keys have been inserted.
+
+Insert(5),h_0(5) = (5 + 0) % 10 = 5,Success
+Insert(29),h_0(29) = (29 + 0) % 10 = 9,Success
+Insert(20),h_0(20) = (20 + 0) % 10 = 0,Success
+Insert(0),h_0(0) = (0 + 0) % 10 = 0|h_1(0) = (0 + 1) % 10 = 1,Collision|Success
+Insert(21),h_0(21) = (21 + 0) % 10 = 1|h_1(21) = (21 + 1) % 10 = 2,Collision|Success
+Insert(15),h_0(15) = (15 + 0) % 10 = 5|h_1(15) = (15 + 1) % 10 = 6,Collision|Success
+Index,Status,Value
+0,O,20
+1,O,0
+2,O,21
+3,E,None
+4,E,None
+5,O,5
+6,O,15
+7,E,None
+8,E,None
+9,O,29
+
+What is the time complexity to insert an element into a hash table using chaining? Deleting an item?
+
+Inserting an element into one of the best hash tables using chaining involves finding the hash code of an item in a steps, creating a node with the item in b steps, and creating a pointer from the bucket with the hash code as index to the node in c steps. The time function is T(n) = a + b + c = d. The best case time complexity is O(d) = O(1). Deleting may remove the first node in a chain as has time complexity O(1).
+
+Let n be the number of items in the hash table.
+Let m be the number of buckets in the hash table.
+Let the load factor be the ratio n / m.
+The average length of a chain is the load factor.
+Inserting an element into an average hash table using chaining involves finding the hash code of an item in a steps, creating a node with the item in b steps, finding the last node of the chain in the bucket with the hash code by examining about <load factor> nodes in c<load factor> steps, and creating a pointer from the last node to the new node in d steps. The time function is T(n) = a + b + c<load factor> + d = f + c<load factor>. The average case time complexity is O(f + c<load factor>) = O(1 + <load factor>) < O(1 + 1) = O(1). Deleting may remove the last node in an average chain and have time complexity O(1 + n/m).
+
+Inserting an element into one of the worst hash tables using chaining involves finding the hash code of an item in a steps, creating a node with the item in b steps, finding the last node of the chain in the bucket with all items by examining n nodes in cn steps, and creating a pointer from the last node to the new node in d steps. The time function is T(n) = a + b + cn + d = f + cn. The worst case time complexity is O(f + cn) = O(1 + n) = O(n). Deleting would require finding a node in 1 linked list and has time complexity O(n).
+
+Module 4
+
+Trees
+
+In which scenario would a breadth-first search be more suitable than a depth-first search?
+
+a. Searching for an item in a large, sparsely populated graph
+b. Searching for an item in a small, densely populated graph
+c. Searching for the shortest path in a graph
+d. Searching for any path in a graph
+
+A Breadth First Search is more suitable than a Depth First Search when searching for the shortest path in a graph from a starting node to an ending node. Let a level in a graph be a group of all nodes that are a certain number of nodes away from a starting node. BFS searches a graph level by level. BFS starts at a starting node in level 0. Next, BFS examines all nodes in level 1 relative to the starting node. If an ending node is in this level, then BFS can identify the starting node, the ending node, and the edge between them. The edge is the shortest possible path between the starting node and the ending node. Next, BFS examines all nodes in level 2. If an ending node is in this level, then BFS can identify the starting node, the ending node, and the 2-edge path(s) between them. Any of these paths is one of the shortest possible paths between the starting node and the ending node.
+
+Given the following pre-order and in-order traversals of a binary tree, sketch the original tree.
+
+Pre-order: G, B, A, D, C, E, F, I, H, K
+In-order: A, B, C, D, E, F, G, H, I, K
+
+│       ┌── K
+│   ┌── I
+│   │   └── H
+└── G
+    │           ┌── F
+    │       ┌── E
+    │   ┌── D
+    │   │   └── C
+    └── B
+        └── A
+
+Which of the following statements about binary trees is false?
+
+a. Every binary tree is either full or complete.
+b. The maximum number of nodes at level 'l' of a binary tree is 2^l.
+c. In a binary tree, the number of leaf nodes is always one more than the number of nodes with two children.
+d. The height of a binary tree with 'n' nodes is at least log(n+1).
+
+
+A full binary tree is a binary tree where every internal node has 2 children / every node has either 0 or 2 children.
+A complete binary tree is a binary tree where all levels are filled except possibly the last, which is filled left to right. All leaves have the same depth.
+
+A binary tree may be a simple list.
+In this case, it is not the case that every internal node has 2 children / every node has either 0 or 2 children.
+Such a binary tree also does not have all levels filled except possible the last.
+
+Another example is a binary tree with a root node and a right child.
+In this case, it is not the case that the every internal node (i.e., the root node) has 2 children / every node has either 0 or 2 children.
+Such a binary tree also does not have all levels filled except possibly the last, which is filled left to right.
+
+a. is false.
+
+
+b. is true.
+
+The maximum number of nodes at the level 0 of the root is 2^0 = 1.
+The maximum number of nodes at the level 1 of the root's 2 children is 2^1 = 2.
+The maximum number of nodes at the level 2 of the 2 children of each of the 2 children of the root is 2^2 = 4.
+The maximum number of nodes at level 'l' of a binary tree is 2^l.
+
+
+A finite tree is a connected, acyclic, undirected graph.
+Pick any node in the tree as a root.
+Every node is reachable from this root.
+Each node other than the root shares 1 edge with its parent.
+There are n - 1 nodes other than the root.
+At least n - 1 edges exist.
+Suppose there were an additional edge.
+This edge would connect a node with a node already connected via the root, creating a cycle and violating the definition of a tree.
+A tree has n - 1 edges.
+
+Let n_0 represent the number of leaves in a binary tree with out degree 0, n_1 represent the number of nodes with out degree 1, and n_2 represent the number of nodes with out degree 2.
+The number of edges in the binary tree is n - 1 = n_0 + n_1 + n_2 - 1.
+
+The root may contribute 0, 1, or 2 edges to the total number of edges.
+Each child may contribute 0, 1, or 2 edges.
+The number of edges contributed by n_0 leaves is 0*n_0 = 0.
+The number of edges contributed by n_1 nodes with 1 child each is 1*n_1 = n_1.
+The number of edges contributed by n_2 nodes with 2 children each is 2*n_2.
+The total number of edges in the graph is n_1 + 2*n_2.
+
+n_0 + n_1 + n_2 - 1 = n_1 + 2*n_2
+n_0 - 1 = n_2
+n_0 = n_2 + 1
+
+c. is true.
+
+
+If height is defined as the index of a level, d. is false.
+
+The height of a binary tree with 0 nodes is -1. log_2(n + 1) = log_2(0 + 1) = log_2(1) = 0. The height of this binary tree is not at least log_2(n + 1).
+The height of a binary tree with 1 node is 0. log_2(n + 1) = log_2(1 + 1) = log_2(2) = 1. The height of this binary tree is not at least log_2(n + 1).
+
+The height of a binary tree with 0 nodes is -1. floor[log_2(n)] = floor[log_2(0)] is undefined and is set to -1. The height of this binary tree is not at least floor[log_2(n)].
+The height of a binary tree with 1 node is 0. floor[log_2(n)] = floor[log_2(1)] = floor[0] = 0. The height of this binary tree is at least floor[log_2(n)].
+The height of a binary tree with 2 nodes is 1. floor[log_2(n)] = floor[log_2(2)] = floor[1] = 1. The height of this binary tree is at least floor[log_2(n)].
+The height of a binary tree with 3 nodes is at least 1. floor[log_2(n)] = floor[log_2(3)] = floor[1.585] = 1. The height of this binary tree is at least floor[log_2(n)].
+
+If height of is defined as the number of levels, d. is true.
+
+The height of a binary tree with 0 nodes is 0. log_2(n + 1) = log_2(0 + 1) = log_2(1) = 0. The height of this binary tree is at least log_2(n + 1).
+The height of a binary tree with 1 node is 1. log_2(n + 1) = log_2(1 + 1) = log_2(2) = 1. The height of this binary tree is at least log_2(n + 1).
+The height of a binary tree with 2 nodes is 2. log_2(n + 1) = log_2(2 + 1) = log_2(3) = 1.585. The height of this binary tree is at least log_2(n + 1).
+The height of a binary tree with 3 nodes is at least 2. log_2(n + 1) = log_2(3 + 1) = log_2(4) = 2. The height of this binary tree is at least log_2(n + 1).
+
+
+Consider the binary search tree below. If we insert the numbers 5, 3, 8, 2, 4 in order, what does the tree look like?
+
+│   ┌── 9
+│   │   └── 8
+└── 6
+    │   ┌── 5
+    │   │   │   ┌── 4
+    │   │   └── 3
+    │   │       └── 2
+    └── 1
+
+What is the time complexity of finding an element in a binary search tree?
+
+In the best case when the element is the root the time complexity is O(1).
+
+Finding an element works by starting at the root, comparing the current node's value with the element of interest, and moving to the left child if the element of interest is less than the current node's value and to the right child otherwise. In the average case, we have a roughly balanced binary search tree. Each comparison allows us to reduce our field of nodes by half. There might be about log(n) halvings. The average case time complexity is logarithmic. Alternatively, the number of levels in a binary search tree is at least log_2(n + 1) and in a balanced binary search tree is about log_2(n). Each time the algorithm moves to a child, the algorithm moves to a new level. The algorithm might move log_2(n + 1) times, or about log_2(n) times. So the average case time complexity is O[log_2(n)].
+
+In the worst case (e.g., a tree where elements are added in ascending order), there are n levels,  and the time complexity is O(n). Alternatively, the algorithm looks at each node in a long linked list.
+
+Explain how you would validate that a given binary tree is a binary search tree.
+
+For a binary tree to be a binary search tree, every value in the left subtree of any node must be less than or equal to the value of the node of interest. Every value in the right subtree of any node must be greater than the value of the node of interest. Each subtree must themselves be binary search trees. I would traverse the binary tree in order and ensure that the resulting list of nodes had values in ascending order.
+
+You are given the root of a binary tree. Describe a method to find its maximum depth.
+
+The depth of a node in a binary tree is the level of the binary tree with the node and the number of edges from the root to the node. The depth of the root is 0. The depth of a child of the root is 1. The maximum depth of a binary tree is the height of the binary tree. To find the max depth / height, I would provide -1 for an empty tree. Otherwise, I would find the maximum depth of the left subtree of the root, find the maximum depth of the right subtree of the root, find their maximum, add that maximum to 1, and provide the sum.
+
+For an empty tree, -1 is provided.
+For a tree with a root, 1 + max(-1, -1) = 1 + (-1) = 0 is provided.
+For a tree with a root and a left child, 1 + max(1 + max(-1, -1), -1) = 1 + max(1 + (-1), -1) = 1 + max(0, -1) = 1 + 0 = 1 is provided.
+
+Graphs
+
+You are given a 2D grid representing a maze with a start point and an end point. Which search algorithm would be the best choice to find the shortest path from start to end, and why?
+
+Let a cell of a maze be the space enclosed by perpendicular grid lines. The top left cell can have row indices i and column indices j. A walkable cell is a cell a traveler in the maze can be. I would imagine the maze as a graph where each node represents a walkable cell. Two nodes are connected by an edge if the corresponding walkable cells are adjacent up and down or left and right. All edges have weight 1. A node can have up to 4 edges. The root node of the graph represents the starting walkable cell.
+
+Breadth First Search is the best choice to find the shortest path from start to end in an unweighted graph. Let a level in a graph be a group of all nodes that are a certain number of nodes away from a starting node. BFS searches a graph level by level. BFS starts at a starting node in level 0. Next, BFS examines all nodes in level 1 relative to the starting node. If an ending node is in this level, then BFS can identify the starting node, the ending node, and the edge between them. The edge is the shortest possible path between the starting node and the ending node. Next, BFS examines all nodes in level 2. If an ending node is in this level, then BFS can identify the starting node, the ending node, and the 2-edge path(s) between them. Any of these paths is one of the shortest possible paths between the starting node and the ending node.
+Breadth First Search explores all the vertices at the current level before moving on to the next level.
+
+Explain how you would detect a cycle in an undirected graph.
+
+A graph contains a cycle if I can get from a vertex back to the vertex by following unique edges.
+We can indicate that a cycle exists
+when we visit vertices and find that a node q that we just arrived at
+is connected to a node n that we already visited
+that is not the node p that we just came from.
+
+Consider a graph consisting of:
+node 0 connected to nodes 1 and 3
+node 1 connected to nodes 0 and 2
+node 2 connected to nodes 1 and 3
+node 3 connected to nodes 2 and 0
+
+0--1--2
+|     |
+3     |
+-------
+
+We visit root node 0.
+We visit node 1.
+We visit node 2.
+We visit node 3.
+We observe that node 3 that we just arrived at
+is connected to node 0 that we already visited
+that is not node 2 that we just came from.
+We have a cycle.
+
+In graph theory, what does the term "degree of a vertex" refer to?
+
+a. The number of edges connected to the vertex.
+b. The maximum distance to any other vertex.
+c. The total weight of the edges connected to the vertex.
+d. The minimum distance to any other vertex.
+
+The number of edges connected to the vertex. In a directed graph, there can be an in degree and an out degree.
+
+What kind of graph is characterized by having no cycles?
+
+a. Directed graph
+b. Complete graph
+c. Tree
+d. Bipartite graph
+
+A tree has no cycles. A tree is an undirected, acyclic, connected graph. A directed graph may have cycles like A->B->C->A. A complete graph has many cycles such as A--B--C--A. A bipartite graph allows cycles with an even number of edges but not an odd number of edges.
+
+Module 5
+
+Binary Search Tree (BST)
+
+Given a binary search tree, explain how you would find the minimum and maximum element without using recursion or while loops.
+
+In a binary search tree, every value of a node in the left subtree of a node N is less than the value of N. Every value of a node in the right subtree of a node N is greater than the value of N. So the value of the left child P of the root is less than or equal to the value of the root, the value of the left child Q of P is less than or equal to the value of P, and so on. The minimum value of the tree is the value of the left most node in the tree. Similarly, the maximum value of the tree is the value of the right most node in the tree. We could store the minimum and maximum values while building the tree.
+
+The in-order traversal of a binary search tree provides a sequence of numbers in what order?
+
+a. Random order
+b. Ascending order
+c. Descending order
+d. Cannot be determined
+
+Ascending order. In a binary search tree, every value of a node in the left subtree of a node N is less than the value of N. Every value of a node in the right subtree of a node N is greater than the value of N. In order traversal starts at a root, traverses as far left as possible, notes that a leaf has no left child, notes the value of the leaf, notes that the leaf has no right child, ascends to the child of the leaf, notes the parent's value, traverses the right subtree of the parent, and so on. The first value recorded is the minimum. The second value recorded is the second to minimum. The next value might be greater than this second to minimum, but is still the next minimum.
+
+In a binary search tree, for every node, the values in the left subtree are _________ the value of the node, and the values in the right subtree are __________ the value of the node.
+
+a. Equal to, Equal to
+b. Less than, Greater than
+c. Greater than, Less than
+d. Less than or equal to, Greater than or equal to
+
+Less than, Greater than
+
+Describe a real-world scenario where a binary search tree would be the most suitable data structure to use.
+
+Consider maintaining a database of flight information sorted by departure time in a self balancing BST.
+It's important to add new flights, delete canceled flights, update a flight's time by deleting and inserting or updating and possibly rebalancing, search for the minimum departure time from now from the perspective of a gate or runway, search for all flights between 2 departure times, and listing all flights in the near future. Adding, deleting, updating, and searching all take efficient O[log(n)] time in the worst case. It's easy to list flights in order by departure time.
+
+Consider any system for managing a list of entities where frequent lookups, insertions, and deletions are expected. Consider a list of users ordered alphabetically by last name. Lookup, insertion, and deletion to a balanced BST have worst case time complexity O[log(n)].
+
+Given a binary search tree with n nodes, what is the worst-case time complexity for search, insertion, and deletion operations? Explain your answer.
+
+Searching, inserting, and deleting all have best case time complexities of O(1). In the best case, we find a value at the root. We add the root. We delete the root. The time complexity is close to the height of the tree.
+
+Searching, inserting, and deleting all have average case time complexities of O[log(n)].
+Finding an element works by starting at the root, comparing the current node's value with the element of interest, and moving to the left child if the element of interest is less than the current node's value and to the right child otherwise. The number of levels in a binary search tree is at least log_2(n + 1) and in a binary search tree with random additions or balancing is about log_2(n). Each time the algorithm moves to a child, the algorithm moves to a new level. The algorithm is likely to move log_2(n + 1) times, or about log_2(n) times. So the average case time complexity is O[log_2(n)].
+Inserting involves finding a node with a open slot to the side corresponding to the inserted value's relationship with the found node. The algorithm is likely to move about log_2(n) times.
+Deleting involves finding an node to delete. If the node to delete has 0 children, it can simply be removed. If the node has 1 child, the deleted node can be replaced with the child. If the node has 2 children, with find either the next largest element (the left most leaf of the subtree of the node to delete) or the next smallest element (the right most leaf of the subtree of the node to delete). Then, we remove the node we wanted to delete and move the in order predecessor or successor into the hole. The successor is guaranteed to preserve the properties of the BST. Finding the node to delete and the successor have total average case time complexities of O[log(n)].
+The time complexity is close to the height of the tree.
+
+Searching, inserting, and deleting all have worst case time complexities of O(n).
+We might be looking one by one for the last element in a linear BST.
+We might be inserting the last element in a linear BST, which involves finding that last node.
+We might be deleting the last element in a linear BST, which involves finding that last node.
+The time complexity is close to the height of the tree.
+
+What is the maximum number of nodes at level D of a binary search tree?
+
+a. D
+b. 2^D
+c. D^2
+d. D!
+
+The maximum number of nodes at the level 0 of the root is 2^0 = 1.
+The maximum number of nodes at the level 1 of the root's 2 children is 2^1 = 2.
+The maximum number of nodes at the level 2 of the 2 children of each of the 2 children of the root is 2^2 = 4.
+The maximum number of nodes at level D of a binary tree is 2^D.
+
+Binary Heap
+
+In a min-heap binary heap, the value of each node is __________ the values of its children.
+
+a. Less than or equal to
+b. Greater than or equal to
+c. Equal to
+d. Not related to
+
+Less than or equal to
+The root is the minimum.
+
+What is the time complexity of inserting an element into a binary heap?
+
+a. O(1)
+b. O(log n)
+c. O(n)
+d. O(n log n)
+
+A binary heap is a complete binary tree but not a binary search tree.
+A complete binary tree is a binary tree where all levels are filled except possibly the last, which is filled left to right.
+All leaf nodes in a complete binary tree are located on the last or second to last level.
+A complete binary tree is balanced.
+A balanced binary tree is a tree when the heights of the left and right subtrees of any node differ by no more than 1.
+The value of a node in a min heap is less than or equal to the values in all of the children of that node.
+The value of the root is smallest.
+The value of a node in a max heap is less than or equal to the values in all of the children of that node.
+The value of the root is greatest.
+Nodes are added to the lowest level from left to right. An added element is compared to its parent and swapped if the added element is less. This comparing and swapping continues until the added element is not less than its parent.
+A node might rise all O[log(n)] levels of a heap. The worst case time complexity is O[log(n)]. We place nodes at the end then bubble nodes up to their correct positions. This bubbling takes time proportional to the height of the heap.
+The root / smallest node is removed and nodes replacing it are drawn from right to left on the lowest level. In a min heap, the new root is compared with its smaller child and swapped if the smaller child is smaller than the new root. In the worst case, swapping occurs at all O[log(n)] levels of a binary heap. The worst case time complexity is O[log(n)]. The next smallest element is used to replace the root.
+A tree of height h contains a number of elements that is greater than or equal to 2^{h-1} and less than 2^h.
+
+You are given a binary heap with 7 elements. What is the height of the heap? Explain your answer.
+
+The height of a binary tree is the index of the last level.
+The height of a binary tree with only a root is 0.
+The height of an empty binary tree is -1.
+
+Level 0 has 2^0 = 1 node.
+Level 1 has 2^1 = 2 nodes, for a total of 3 so far.
+Level 2 has 2^2 = 4 nodes, for a total of 7.
+
+The height and index of the last level in a binary heap with 7 nodes is 2.
+
+Every level i = 0, 1, ..., h - 1 has 2^i nodes.
+Level h is filled from left to right but may be only partially full.
+Levels 0, 1, ..., h - 1 have total nodes 2^0 + 2^1 + ... + 2^{h-1} = 2^h - 1.
+Level h has at least 1 node and at most 2^h nodes.
+The minimum number of nodes in the heap is 2^h - 1 + 1 = 2^h.
+The maximum number of nodes in the heap is 2^0 + 2^1 + ... + 2^{h-1} + 2^h = 2^{h+1} - 1.
+2^h <= n <= 2^{h+1} - 1
+log(2^h) <= log(n) <= log(2^{h+1} - 1) < log(2^{h+1})
+h <= log(n) < h + 1
+h = floor[log(n)]
+
+
+Given the following min-heap, write out the heap after a deletion operation:
+                                  5
+                      20                  30
+                 31     60        40
+
+
+
+│   ┌── 30
+└── 20
+    │   ┌── 60
+    └── 31
+        └── 40
