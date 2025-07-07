@@ -1,0 +1,15 @@
+Binary heap
+
+Is a heap complete?
+What is the height of a heap and how is it determined?
+What is the index of the root and the bottom layer?
+
+What is best, average, and worst case complexities of a binary tree, Binary Search Tree, and heap?
+Worst case time complexity for BST: O(n)
+Average case time complexity for BST: O(log(n))
+Worst case time complexity for balanced BST: O(log(n))
+
+"Pre-order", "in-order", and "post-order" apply to traversals, not finding an element.
+Pre-order traversal is useful for copying. Post-order traversal is useful for deleting.
+
+How does inserting into a heap work?
