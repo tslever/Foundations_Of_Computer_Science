@@ -1,0 +1,47 @@
+﻿In class group assignment:,,,,,,,,,,,
+Compute the Longest Common String (LCS) between ALGORITHM and ALIGNMENT.,,,,,,,,,,,
+,,,,,,,,,,,
+Table Method,,,,,,,,,,,
+,,,,,,,,,,,
+,j,0,1,2,3,4,5,6,7,8,9
+i,,,A,L,I,G,N,M,E,N,T
+0,,0,0,0,0,0,0,0,0,0,0
+1,A,0,\1,<1,<1,<1,<1,<1,<1,<1,<1
+2,L,0,^1,\2,<2,<2,<2,<2,<2,<2,<2
+3,G,0,^1,^2,^2,\3,<3,<3,<3,<3,<3
+4,O,0,^1,^2,^2,^3,^3,^3,^3,^3,^3
+5,R,0,^1,^2,^2,^3,^3,^3,^3,^3,^3
+6,I,0,^1,^2,\3,^3,^3,^3,^3,^3,^3
+7,T,0,^1,^2,^3,^3,^3,^3,^3,^3,\4
+8,H,0,^1,^2,^3,^3,^3,^3,^3,^3,^4
+9,M,0,^1,^2,^3,^3,^3,\4,<4,<4,^4
+,,,,,,,,,,,
+We determine that ALGORITHM precedes ALIGNMENT alphabetically.,,,,,,,,,,,
+"We atomize indices with label i and ""<empty string>ALGORITHM"" in a row multi-index of a matrix and indices with label j and ""<empty string>ALIGNMENT"" in a column multi-index of the matrix.",,,,,,,,,,,
+"Because in this context empty string does not match empty string or any of the letters in either ALGORITHM or ALIGNMENT, we fill the first column to the right of ALGORITHM and the first row below ALIGNMENT with 0s.",,,,,,,,,,,
+"When characters corresponding to a cell C match, in C we draw a diagonal line and record 1 plus the value in the cell to the upper left of C;",,,,,,,,,,,
+"When characters corresponding to a cell C don't match and values in cell A above C and B to the left of C are not equal, in C we draw an arrow toward whichever of A and B has the greater value and record that value; and",,,,,,,,,,,
+"We use a variation on the Table Method where, when characters corresponding to a cell C don't match and values in cell A above C and B to the left of C are equal, in C we draw an up arrow and record the value in A.",,,,,,,,,,,
+"Starting from the bottom right cell of our matrix, we follow the arrows until we get to a cell in the first column of 0s or the first row of 0s. We record any characters corresponding to a cell with a backslash in a collection.",,,,,,,,,,,
+We arrange the characters in the collection in reverse order in a string to create the Longest Common Subsequence.,,,,,,,,,,,
+"The Longest Common Subsequence between ALGORITHM and ALIGNMENT as determined by the Table Method is ""ALGT"".",,,,,,,,,,,
+,,,,,,,,,,,
+Visual Method,,,,,,,,,,,
+,,,,,,,,,,,
+A,L,G,O,R,I,T,H,M,,,
+|,|,   \,,,,   \____,,,,,
+A,L,I,G,N,M,E,N,T,,,
+,,,,,,,,,,,
+We determine that ALGORITHM precedes ALIGNMENT alphabetically.,,,,,,,,,,,
+We atomize ALGORITHM in a row.,,,,,,,,,,,
+We atomize ALIGNMENT in a row.,,,,,,,,,,,
+"We iteratively draw a line between the first character of ALGORITHM and the first occurrence of that character in ALIGNMENT, the second character of ALGORITHM and the first occurrence of that character in ALIGNMENT, and so on.",,,,,,,,,,,
+We do not draw a line when a character in ALGORITHM does not have a corresponding character in ALIGNMENT or when the line would cross a previous line.,,,,,,,,,,,
+A in ALGORITHM matches the first A in ALIGNMENT. We draw a line.,,,,,,,,,,,
+L in ALGORITHM matches the first L in ALIGNMENT. We draw a line.,,,,,,,,,,,
+G in ALGORITHM matches the first G in ALIGNMENT. We draw a line.,,,,,,,,,,,
+I matches but a line drawn between I in ALGORITHM and I in ALIGNMENT would cross over the line between G in ALGORITHM and G in ALIGNMENT.,,,,,,,,,,,
+T in ALGORITHM matches the first T in ALIGNMENT. We draw a line.,,,,,,,,,,,
+M matches but a line drawn between M in ALGORITHM and M in ALIGNMENT would cross over the line between T in ALGORITHM and T in ALIGNMENT.,,,,,,,,,,,
+We create the Longest Common Subsequence as the string with the characters in ALGORITHM with lines.,,,,,,,,,,,
+"The Longest Commpn Subsequence between ALGORITHM and ALIGNMENT as determined by the above visual method is ""ALGT"".",,,,,,,,,,,
