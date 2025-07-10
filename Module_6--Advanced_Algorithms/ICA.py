@@ -223,7 +223,9 @@ print("A* path from A to G:", astar_path)
 print("Total path cost:     ", astar_cost)
 
 # Redraw & highlight the found path
-edge_path = list(zip(astar_path[:-1], astar_path[1:]))
+edge_path = []
+if astar_path is not None:
+    edge_path = list(zip(astar_path[:-1], astar_path[1:]))
 
 # draw the base graph
 nx.draw(G, pos, with_labels=True, node_size=1200, font_weight='bold')
