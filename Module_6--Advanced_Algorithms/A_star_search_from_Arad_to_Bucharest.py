@@ -151,43 +151,78 @@ def describe(min_heap) -> str:
     return "The min heap currently contains\n" + "\n".join(parts) + "."
 
 
-def _hierarchy_pos(G: nx.DiGraph,
-                   root: str,
-                   *,
-                   x_center: float = 0.5,
-                   total_width: float = 1.0,
-                   vertical_gap: float = 1.0,
-                   vertical_loc: float = 0.0,
-                   _pos_cache: dict[str, tuple[float, float]] | None = None
-                   ) -> dict[str, tuple[float, float]]:
+def _hierarchy_pos(
+    G: nx.DiGraph,
+    root: str,
+    *,
+    x_center: float = 0.5,
+    total_width: float = 1.0,
+    vertical_gap: float = 1.0,
+    vertical_loc: float = 0.0,
+    _pos_cache: dict[str, tuple[float, float]] | None = None,
+    _visited: set[str] | None = None
+) -> dict[str, tuple[float, float]]:
     """
-    Recursively assign (x, y) positions so that
+    Recursively compute (x, y) coordinates that lay a **tree** out top-down.
 
-        • `root` is centred at (x_center, vertical_loc)
-        • children share the horizontal interval allotted to their parent
-        • y-coordinates decrease by `vertical_gap` for each generation
+    The routine now includes *cycle protection*: if `root` (or any descendant)
+    is encountered again while the recursion is still active, that branch is
+    ignored so the call stack cannot grow indefinitely.
 
-    Works for any out-degree (not just binary trees).
+    Parameters
+    ----------
+    G
+        A directed graph that is *supposed* to represent an exploration tree.
+        If spurious back-edges have turned it into a DAG or a graph with
+        cycles, those extra edges are safely ignored.
+    root
+        The node to treat as the root of the layout.
+    x_center, total_width, vertical_gap, vertical_loc
+        Usual layout parameters (unchanged).
+    _pos_cache, _visited
+        Internal parameters used to accumulate results and remember the nodes
+        already placed.  **Do not supply manually.**
+
+    Returns
+    -------
+    dict
+        Mapping ``node → (x, y)`` suitable for `networkx.draw`.
     """
+    # ------------------------------------------------------------------ setup
     if _pos_cache is None:
         _pos_cache = {}
+    if _visited is None:
+        _visited = set()
 
+    # If we've already placed this node, bail out — prevents infinite recursion
+    if root in _visited:
+        return _pos_cache
+    _visited.add(root)
+
+    # ------------------------------------------------------------------ place
     _pos_cache[root] = (x_center, vertical_loc)
 
     children = list(G.successors(root))
-    if not children:                     # leaf → nothing else to lay out
+    if not children:                # leaf ⇒ nothing more to lay out
         return _pos_cache
 
-    dx = total_width / len(children)     # width allocated to each subtree
-    next_x = x_center - total_width / 2 + dx / 2
+    # ---------------------------------------------------------------- recurse
+    dx = total_width / len(children)              # width for each subtree
+    next_x = x_center - total_width / 2 + dx / 2  # centre of leftmost child
+
     for child in children:
-        _hierarchy_pos(G,
-                        child,
-                        x_center=next_x,
-                        total_width=dx,
-                        vertical_gap=vertical_gap,
-                        vertical_loc=vertical_loc - vertical_gap,
-                        _pos_cache=_pos_cache)
+        if child in _visited:        # skip back-edge to an ancestor/older node
+            continue
+        _hierarchy_pos(
+            G,
+            child,
+            x_center=next_x,
+            total_width=dx,
+            vertical_gap=vertical_gap,
+            vertical_loc=vertical_loc - vertical_gap,
+            _pos_cache=_pos_cache,
+            _visited=_visited,
+        )
         next_x += dx
 
     return _pos_cache
@@ -256,7 +291,7 @@ def perform_A_star_search(
     goal: str,
     heuristic
 ):
-    print("\nI begin by placing a node representing the start on min heap ordered by estimated total distance.")
+    print("We begin by placing a node representing the start on a min heap ordered by estimated total distance.")
     initial_distance_so_far = 0
     initial_estimated_distance_from_node_to_goal = heuristic[start]
     initial_estimated_total_distance = initial_distance_so_far + initial_estimated_distance_from_node_to_goal
@@ -267,6 +302,7 @@ def perform_A_star_search(
     heapq.heappush(min_heap, node_representing_start)
     print(describe(min_heap))
 
+    print(f"We place location {start} in a search tree.")
     search_tree = nx.DiGraph()
     search_tree.add_node(start)
 
@@ -277,24 +313,21 @@ def perform_A_star_search(
 
     step = 0
     while min_heap:
-        estimated_total_distance, cost_so_far, location, preceding_location = heapq.heappop(min_heap)
-        if location in set_of_locations_corresponding_to_expanded_nodes:
-            continue
+
+        # Select.
+        estimated_total_distance, distance_so_far, location, preceding_location = heapq.heappop(min_heap)
+
+        print(
+            f"\nStep {step}\n" +
+            "We select a node from the min heap. This node has minimal estimated total distance and is " +
+            f"({estimated_total_distance}, {distance_so_far}, {location}, {preceding_location}).\n" +
+            "We draw the search tree."
+        )
 
         draw_search_tree(search_tree, set_of_locations_corresponding_to_expanded_nodes, min_heap, selected = location)
 
-        set_of_locations_corresponding_to_expanded_nodes.add(location)
         if preceding_location is not None:
             dictionary_of_locations_and_preceding_locations.setdefault(location, preceding_location)
-
-        print(
-            f"\nStep {step}: I now expand the node with location {location}.\n"
-            f"The distance so far g is {cost_so_far} and "
-            f"the estimated distance from {location} to goal {goal} h is {heuristic[location]}, "
-            f"so the estimated total distance from start through {location} to goal f is {estimated_total_distance}."
-        )
-
-        step += 1
 
         if location == goal:
             print("Since this is the goal node, the search halts here.\n")
@@ -303,12 +336,23 @@ def perform_A_star_search(
                 location = dictionary_of_locations_and_preceding_locations[location]
                 path.append(location)
             path.reverse()
-            return path, cost_so_far
+            return path, distance_so_far
+
+        print(
+            f"We expand this node.\n"
+            f"The distance so far g is {distance_so_far}. "
+            f"The estimated distance from {location} to goal {goal} h is {heuristic[location]}. "
+            f"The estimated total distance from start {start} through {location} to goal {goal} f is {estimated_total_distance}."
+        )
 
         # Expand.
+        set_of_locations_corresponding_to_expanded_nodes.add(location)
+
         for neighbor in graph.neighbors(location):
             weight = graph[location][neighbor]["weight"]
-            tentative_distance = cost_so_far + weight
+            tentative_distance = distance_so_far + weight
+
+            search_tree.add_edge(location, neighbor)
 
             if neighbor in set_of_locations_corresponding_to_expanded_nodes:
                 print(
@@ -325,7 +369,7 @@ def perform_A_star_search(
                 f_cand = tentative_distance + heuristic[neighbor]
                 heapq.heappush(min_heap, (f_cand, tentative_distance, neighbor, location))
 
-                search_tree.add_edge(location, neighbor)
+                #search_tree.add_edge(location, neighbor)
 
                 if old_g == float("inf"):
                     sentence = (
@@ -357,6 +401,8 @@ def perform_A_star_search(
 
         # Finish step with a fresh queue overview.
         print("  At the end of this expansion step, " + describe(min_heap))
+
+        step += 1
 
     # If we exit the loop, the open list is empty and the goal was not reached.
     return None, float("inf")
