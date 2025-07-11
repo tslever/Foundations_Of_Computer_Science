@@ -10,7 +10,7 @@ import networkx as nx
 
 # Define weighted undirected edges.
 list_of_edges = [
-    ('Arad', 'Sibiu', 140),
+    ('Arad', 'Sibiu', 140), # kilometers
     ('Arad', 'Timisoara', 118),
     ('Arad', 'Zerind', 75),
 
@@ -109,7 +109,7 @@ dictionary_of_cities_and_positions = {
 }
 
 
-# Define a heuristic of straight line estimates to goal Bucharest.
+# Define a heuristic of estimates of straight line distances to goal Bucharest.
 heuristic = {
     'Arad': 366,
     'Bucharest': 0,
@@ -134,117 +134,229 @@ heuristic = {
 }
 
 
+def describe(min_heap) -> str:
+    '''
+    The min heap is a list satisfying requirements for a min heap.
+    The first element of the min heap is the element in the heap with the minimal estimated total distance.
+    However, while all of the elements of the heap satisfy the requirements for a min heap,
+    the elements other than the first may not necessarily be sorted by estimated total distance. 
+    '''
+    items: list[tuple[float, float, str, str | None]] = sorted(min_heap)
+    if not items:
+        return "The min heap is empty."
+    parts = [
+        f"(f = {f:.0f}, g = {g:.0f}, location = {n}, preceding location = {p})"
+        for f, g, n, p in items
+    ]
+    return "The min heap currently contains\n" + "\n".join(parts) + "."
+
+
+def _hierarchy_pos(G: nx.DiGraph,
+                   root: str,
+                   *,
+                   x_center: float = 0.5,
+                   total_width: float = 1.0,
+                   vertical_gap: float = 1.0,
+                   vertical_loc: float = 0.0,
+                   _pos_cache: dict[str, tuple[float, float]] | None = None
+                   ) -> dict[str, tuple[float, float]]:
+    """
+    Recursively assign (x, y) positions so that
+
+        • `root` is centred at (x_center, vertical_loc)
+        • children share the horizontal interval allotted to their parent
+        • y-coordinates decrease by `vertical_gap` for each generation
+
+    Works for any out-degree (not just binary trees).
+    """
+    if _pos_cache is None:
+        _pos_cache = {}
+
+    _pos_cache[root] = (x_center, vertical_loc)
+
+    children = list(G.successors(root))
+    if not children:                     # leaf → nothing else to lay out
+        return _pos_cache
+
+    dx = total_width / len(children)     # width allocated to each subtree
+    next_x = x_center - total_width / 2 + dx / 2
+    for child in children:
+        _hierarchy_pos(G,
+                        child,
+                        x_center=next_x,
+                        total_width=dx,
+                        vertical_gap=vertical_gap,
+                        vertical_loc=vertical_loc - vertical_gap,
+                        _pos_cache=_pos_cache)
+        next_x += dx
+
+    return _pos_cache
+
+
+def draw_search_tree(search_tree: nx.DiGraph,
+                     closed: set[str],
+                     open_heap: list[tuple[float, float, str, str | None]],
+                     *,
+                     selected: str | None = None,
+                     solution_path: set[str] = set()) -> None:
+    """Visualise the exploration tree with a tidy, top-down layout."""
+
+    # ---------- colour coding --------------------------------------------- #
+    open_nodes = {n for _, _, n, _ in open_heap}
+    colours = []
+    for n in search_tree.nodes():
+        if n in solution_path:                 # final solution path → red
+            colours.append("firebrick")
+        elif n == selected: # just chosen for expansion
+            colours.append("gold")
+        elif n in closed:                      # already expanded     → grey
+            colours.append("lightgrey")
+        elif n in open_nodes:                  # still in frontier    → orange
+            colours.append("orange")
+        else:
+            colours.append("white")            # should not happen
+
+    # ---------- layout ----------------------------------------------------- #
+    # The root is the unique node with in-degree 0 (there is only one).
+    try:
+        root = next(n for n in search_tree.nodes() if search_tree.in_degree(n) == 0)
+    except StopIteration:                      # defensive fallback
+        root = next(iter(search_tree))
+
+    pos = _hierarchy_pos(search_tree, root, vertical_gap = 1.5)
+
+    # ---------- draw ------------------------------------------------------- #
+    plt.figure(figsize=(9, 6))
+    nx.draw(
+        search_tree,
+        pos,
+        with_labels=True,
+        node_color=colours,
+        node_size=800,
+        arrows=True,
+        arrowsize=14,
+        width=1.3,
+    )
+    plt.title("A* search tree (grey = closed, gold = selected, orange = open)")
+    plt.show()
+
+
+'''
+A* search expands the node n in a min heap with the minimal estimated total distance f from start through n to goal.
+A* search estimates a total distance as the sum of the distance g so far to reach n and the estimated distance h from n to goal.
+
+In comparison to A* search, greedy search expands the node in a min heap with the minimal estimated distance h from n to goal.
+Greedy search expands the node in a priority queue with the minimum heuristic.
+Greedy search makes a locally optimal choice with the hope of finding a global optimum.
+Greedy search does not generally produce a global optimum but may approximate a global optimum in reasonable time.
+'''
 def perform_A_star_search(
     graph: nx.Graph,
     start: str,
     goal: str,
-    heuristic,
-    weight_attr: str = "weight",
+    heuristic
 ):
-    """
-    A* search narrated in full prose, with explicit commentary on
-    queue contents, re-queuing, and closed-set effects.
-    """
-    # ── data structures ────────────────────────────────────────────
-    open_heap: list[tuple[float, float, str, str | None]] = []
-    heapq.heappush(open_heap, (heuristic[start], 0.0, start, None))
+    print("\nI begin by placing a node representing the start on min heap ordered by estimated total distance.")
+    initial_distance_so_far = 0
+    initial_estimated_distance_from_node_to_goal = heuristic[start]
+    initial_estimated_total_distance = initial_distance_so_far + initial_estimated_distance_from_node_to_goal
+    initial_preceding_location = None
+    node_representing_start = (initial_estimated_total_distance, initial_distance_so_far, start, initial_preceding_location)
 
-    g_best:   dict[str, float] = {start: 0.0}   # cheapest g discovered so far
-    came_from: dict[str, str] = {}              # child → parent
-    closed:   set[str]        = set()           # nodes permanently expanded
+    min_heap: list[tuple[float, float, str, str | None]] = []
+    heapq.heappush(min_heap, node_representing_start)
+    print(describe(min_heap))
 
-    def queue_view() -> str:
-        """Return a prose-friendly description of the open list."""
-        items = sorted((f, n) for f, g, n, _ in open_heap)
-        if not items:
-            return "The open list is now empty."
-        parts = [f"{node} (f = {f:.0f})" for f, node in items]
-        return "The open list currently contains: " + ", ".join(parts) + "."
+    search_tree = nx.DiGraph()
+    search_tree.add_node(start)
 
-    # ── initial narration ──────────────────────────────────────────
-    print("\nI begin by placing the start node on the open list / priority queue ordered by priority f = cost so far g + heuristic h.")
-    print(queue_view())
+    set_of_locations_corresponding_to_expanded_nodes: set[str] = set()
+    dictionary_of_locations_and_preceding_locations: dict[str, str] = {}
+
+    g_best: dict[str, float] = {start: 0.0} # cheapest g discovered so far
 
     step = 0
-    while open_heap:
-        # Retrieve the node with the lowest f.  Discard stale duplicates.
-        f_u, g_u, u, parent = heapq.heappop(open_heap)
-        if u in closed:
-            continue   # This entry is obsolete; a cheaper route has closed u.
+    while min_heap:
+        estimated_total_distance, cost_so_far, location, preceding_location = heapq.heappop(min_heap)
+        if location in set_of_locations_corresponding_to_expanded_nodes:
+            continue
 
-        closed.add(u)
-        if parent is not None:
-            came_from.setdefault(u, parent)
+        draw_search_tree(search_tree, set_of_locations_corresponding_to_expanded_nodes, min_heap, selected = location)
+
+        set_of_locations_corresponding_to_expanded_nodes.add(location)
+        if preceding_location is not None:
+            dictionary_of_locations_and_preceding_locations.setdefault(location, preceding_location)
 
         print(
-            f"\nStep {step}: I now expand node {u}. "
-            f"The cost so far is g = {g_u}, the heuristic estimate "
-            f"is h = {heuristic[u]}, so the evaluation value is "
-            f"f = g + h = {f_u}."
+            f"\nStep {step}: I now expand the node with location {location}.\n"
+            f"The distance so far g is {cost_so_far} and "
+            f"the estimated distance from {location} to goal {goal} h is {heuristic[location]}, "
+            f"so the estimated total distance from start through {location} to goal f is {estimated_total_distance}."
         )
+
         step += 1
 
-        # ── goal test ───────────────────────────────────────────────
-        if u == goal:
+        if location == goal:
             print("Since this is the goal node, the search halts here.\n")
-            # Reconstruct and return the path.
-            path = [u]
-            while u != start:
-                u = came_from[u]
-                path.append(u)
-            return path[::-1], g_u
+            path = [location]
+            while location != start:
+                location = dictionary_of_locations_and_preceding_locations[location]
+                path.append(location)
+            path.reverse()
+            return path, cost_so_far
 
-        # ── examine each neighbour in turn ─────────────────────────
-        for v in graph.neighbors(u):
-            w = graph[u][v][weight_attr]
-            g_cand = g_u + w
+        # Expand.
+        for neighbor in graph.neighbors(location):
+            weight = graph[location][neighbor]["weight"]
+            tentative_distance = cost_so_far + weight
 
-            if v in closed:
+            if neighbor in set_of_locations_corresponding_to_expanded_nodes:
                 print(
-                    f"  I consider the edge {u} → {v} whose cost is {w}. "
-                    f"The tentative cost to reach {v} would be g = {g_cand}. "
-                    f"However, {v} has already been closed, so I can take no "
-                    f"further action regarding this edge."
+                    f"I consider the edge ({location}, {neighbor}) whose distance is {weight}. "
+                    f"The tentative distance to go from {location} to {neighbor} would be g = {tentative_distance}. "
+                    f"However, {neighbor} has already been expanded, so I can take no further action regarding this edge."
                 )
                 continue
 
-            old_g = g_best.get(v, float("inf"))
-            if g_cand < old_g:
+            old_g = g_best.get(neighbor, float("inf"))
+            if tentative_distance < old_g:
                 # A better (or first) path has been found.
-                g_best[v] = g_cand
-                f_cand = g_cand + heuristic[v]
-                heapq.heappush(open_heap, (f_cand, g_cand, v, u))
+                g_best[neighbor] = tentative_distance
+                f_cand = tentative_distance + heuristic[neighbor]
+                heapq.heappush(min_heap, (f_cand, tentative_distance, neighbor, location))
+
+                search_tree.add_edge(location, neighbor)
 
                 if old_g == float("inf"):
                     sentence = (
-                        f"    This is the first recorded path to {v}. "
-                        f"I therefore update a representation of {v} to (f = {f_cand}, g = {g_cand}, node = '{v}', parent = '{u}'), "
+                        f"    This is the first recorded path to {neighbor}. "
+                        f"I therefore update a representation of {neighbor} to (f = {f_cand}, g = {tentative_distance}, node = '{neighbor}', parent = '{location}'), "
                         f"and place this represention on the open list."
                     )
                 else:
-                    old_f = old_g + heuristic[v]
+                    old_f = old_g + heuristic[neighbor]
                     sentence = (
                         f"    This route is better than the previously known "
-                        f"one (old f = {old_f:.0f}). I update {v} accordingly "
+                        f"one (old f = {old_f:.0f}). I update {neighbor} accordingly "
                         f"and re-queue it with the improved priority f = {f_cand:.0f}."
                     )
                 print(
-                    f"  I examine edge {u} → {v} with cost {w}. "
-                    f"The provisional cost to {v} is g = {g_cand}. "
+                    f"  I examine edge {location} → {neighbor} with cost {weight}. "
+                    f"The provisional cost to {neighbor} is g = {tentative_distance}. "
                     f"{sentence}"
                 )
-                print("  " + queue_view())
+                print("  " + describe(min_heap))
             else:
                 print(
-                    f"  I examine edge {u} → {v} with cost {w}. "
-                    f"The provisional cost would be g = {g_cand}, which is "
-                    f"no better than the best cost already recorded for {v} "
-                    f"(g = {old_g}). Consequently, I leave {v} unchanged; "
+                    f"  I examine edge {location} → {neighbor} with cost {weight}. "
+                    f"The provisional cost would be g = {tentative_distance}, which is "
+                    f"no better than the best cost already recorded for {neighbor} "
+                    f"(g = {old_g}). Consequently, I leave {neighbor} unchanged; "
                     f"it remains on the open list with its existing priority."
                 )
 
         # Finish step with a fresh queue overview.
-        print("  At the end of this expansion step, " + queue_view())
+        print("  At the end of this expansion step, " + describe(min_heap))
 
     # If we exit the loop, the open list is empty and the goal was not reached.
     return None, float("inf")
