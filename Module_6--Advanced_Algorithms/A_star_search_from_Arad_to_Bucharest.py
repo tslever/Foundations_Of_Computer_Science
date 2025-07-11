@@ -242,11 +242,12 @@ def draw_search_tree(search_tree: nx.DiGraph,
 
 
 '''
+A* search minimizes an estimated total distance from start through a node n to a goal.
 A* search expands the node n in a min heap with the minimal estimated total distance f from start through n to goal.
 A* search estimates a total distance as the sum of the distance g so far to reach n and the estimated distance h from n to goal.
 
 In comparison to A* search, greedy search expands the node in a min heap with the minimal estimated distance h from n to goal.
-Greedy search expands the node in a priority queue with the minimum heuristic.
+Greedy search expands the node in a min heap with the minimum heuristic.
 Greedy search makes a locally optimal choice with the hope of finding a global optimum.
 Greedy search does not generally produce a global optimum but may approximate a global optimum in reasonable time.
 '''
