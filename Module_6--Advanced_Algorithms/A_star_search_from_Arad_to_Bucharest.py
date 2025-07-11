@@ -3,6 +3,7 @@ Find the best route from Arad to Bucharest given the following graph and heurist
 '''
 
 
+from collections import Counter
 import heapq
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -160,59 +161,39 @@ def _hierarchy_pos(
     vertical_gap: float = 1.0,
     vertical_loc: float = 0.0,
     _pos_cache: dict[str, tuple[float, float]] | None = None,
-    _visited: set[str] | None = None
+    _visited: set[str] | None = None,
 ) -> dict[str, tuple[float, float]]:
     """
-    Recursively compute (x, y) coordinates that lay a **tree** out top-down.
+    Recursively compute a tidy top-down layout for a *tree-shaped* subgraph
+    of ``G`` rooted at *root*.
 
-    The routine now includes *cycle protection*: if `root` (or any descendant)
-    is encountered again while the recursion is still active, that branch is
-    ignored so the call stack cannot grow indefinitely.
-
-    Parameters
-    ----------
-    G
-        A directed graph that is *supposed* to represent an exploration tree.
-        If spurious back-edges have turned it into a DAG or a graph with
-        cycles, those extra edges are safely ignored.
-    root
-        The node to treat as the root of the layout.
-    x_center, total_width, vertical_gap, vertical_loc
-        Usual layout parameters (unchanged).
-    _pos_cache, _visited
-        Internal parameters used to accumulate results and remember the nodes
-        already placed.  **Do not supply manually.**
-
-    Returns
-    -------
-    dict
-        Mapping ``node → (x, y)`` suitable for `networkx.draw`.
+    Cycle protection is in place: if an edge points back to an ancestor
+    (or any node already laid out), that edge is ignored for both recursion
+    **and** spacing, so it cannot distort the horizontal allocation of
+    the real children.
     """
-    # ------------------------------------------------------------------ setup
+    # ------------------------------- bookkeeping -------------------------- #
     if _pos_cache is None:
         _pos_cache = {}
     if _visited is None:
         _visited = set()
 
-    # If we've already placed this node, bail out — prevents infinite recursion
-    if root in _visited:
+    if root in _visited:                 # already done → nothing to add
         return _pos_cache
     _visited.add(root)
 
-    # ------------------------------------------------------------------ place
     _pos_cache[root] = (x_center, vertical_loc)
 
-    children = list(G.successors(root))
-    if not children:                # leaf ⇒ nothing more to lay out
+    # Keep only *unvisited* successors – i.e. true, downward edges.
+    children = [c for c in G.successors(root) if c not in _visited]
+    if not children:                     # leaf
         return _pos_cache
 
-    # ---------------------------------------------------------------- recurse
-    dx = total_width / len(children)              # width for each subtree
-    next_x = x_center - total_width / 2 + dx / 2  # centre of leftmost child
+    # ------------------------------ recurse ------------------------------ #
+    dx = total_width / len(children)
+    next_x = x_center - total_width / 2 + dx / 2
 
     for child in children:
-        if child in _visited:        # skip back-edge to an ancestor/older node
-            continue
         _hierarchy_pos(
             G,
             child,
@@ -228,39 +209,42 @@ def _hierarchy_pos(
     return _pos_cache
 
 
-def draw_search_tree(search_tree: nx.DiGraph,
-                     closed: set[str],
-                     open_heap: list[tuple[float, float, str, str | None]],
-                     *,
-                     selected: str | None = None,
-                     solution_path: set[str] = set()) -> None:
+def draw_search_tree(
+    search_tree: nx.DiGraph,
+    closed: set[str],
+    open_heap: list[tuple[float, float, str, str | None]],
+    *,
+    selected: str | None = None,
+    solution_path: set[str] = set(),
+) -> None:
     """Visualise the exploration tree with a tidy, top-down layout."""
 
-    # ---------- colour coding --------------------------------------------- #
+    # --- colour coding ----------------------------------------------------
     open_nodes = {n for _, _, n, _ in open_heap}
-    colours = []
-    for n in search_tree.nodes():
-        if n in solution_path:                 # final solution path → red
-            colours.append("firebrick")
-        elif n == selected: # just chosen for expansion
-            colours.append("gold")
-        elif n in closed:                      # already expanded     → grey
-            colours.append("lightgrey")
-        elif n in open_nodes:                  # still in frontier    → orange
-            colours.append("orange")
-        else:
-            colours.append("white")            # should not happen
 
-    # ---------- layout ----------------------------------------------------- #
-    # The root is the unique node with in-degree 0 (there is only one).
+    colours: list[str] = []
+    for n in search_tree.nodes():
+        base = n.split('*')[0]
+
+        if base in solution_path:          # final solution path
+            colours.append("firebrick")
+        elif base == selected:             # node just chosen for expansion
+            colours.append("gold")
+        elif base in open_nodes:           # still in frontier  (NOW higher-priority)
+            colours.append("orange")
+        elif base in closed:               # already expanded
+            colours.append("lightgrey")
+        else:                              # should not happen
+            colours.append("white")
+
+    # --- layout & drawing (unchanged) -------------------------------------
     try:
-        root = next(n for n in search_tree.nodes() if search_tree.in_degree(n) == 0)
-    except StopIteration:                      # defensive fallback
+        root = next(n for n in search_tree if search_tree.in_degree(n) == 0)
+    except StopIteration:
         root = next(iter(search_tree))
 
-    pos = _hierarchy_pos(search_tree, root, vertical_gap = 1.5)
+    pos = _hierarchy_pos(search_tree, root, vertical_gap=1.5)
 
-    # ---------- draw ------------------------------------------------------- #
     plt.figure(figsize=(9, 6))
     nx.draw(
         search_tree,
@@ -305,6 +289,8 @@ def perform_A_star_search(
     print(f"We place location {start} in a search tree.")
     search_tree = nx.DiGraph()
     search_tree.add_node(start)
+
+    duplicate_counts: Counter[str] = Counter()
 
     set_of_locations_corresponding_to_expanded_nodes: set[str] = set()
     dictionary_of_locations_and_preceding_locations: dict[str, str] = {}
@@ -351,56 +337,38 @@ def perform_A_star_search(
         for neighbor in graph.neighbors(location):
             weight = graph[location][neighbor]["weight"]
             tentative_distance = distance_so_far + weight
+            f_cand = tentative_distance + heuristic[neighbor]
 
-            search_tree.add_edge(location, neighbor)
-
-            if neighbor in set_of_locations_corresponding_to_expanded_nodes:
-                print(
-                    f"I consider the edge ({location}, {neighbor}) whose distance is {weight}. "
-                    f"The tentative distance to go from {location} to {neighbor} would be g = {tentative_distance}. "
-                    f"However, {neighbor} has already been expanded, so I can take no further action regarding this edge."
-                )
-                continue
+            if neighbor in search_tree.nodes:
+                duplicate_counts[neighbor] += 1
+                visual_target = f"{neighbor}*{duplicate_counts[neighbor]}"
+                search_tree.add_node(visual_target)
+            else:
+                visual_target = neighbor
+            search_tree.add_edge(location, visual_target)
 
             old_g = g_best.get(neighbor, float("inf"))
-            if tentative_distance < old_g:
-                # A better (or first) path has been found.
+            improvement = tentative_distance < old_g
+
+            heapq.heappush(min_heap, (f_cand, tentative_distance, neighbor, location))
+
+            if improvement:
                 g_best[neighbor] = tentative_distance
-                f_cand = tentative_distance + heuristic[neighbor]
-                heapq.heappush(min_heap, (f_cand, tentative_distance, neighbor, location))
-
-                #search_tree.add_edge(location, neighbor)
-
+                if neighbor in set_of_locations_corresponding_to_expanded_nodes:
+                    set_of_locations_corresponding_to_expanded_nodes.remove(neighbor)
                 if old_g == float("inf"):
-                    sentence = (
-                        f"    This is the first recorded path to {neighbor}. "
-                        f"I therefore update a representation of {neighbor} to (f = {f_cand}, g = {tentative_distance}, node = '{neighbor}', parent = '{location}'), "
-                        f"and place this represention on the open list."
-                    )
+                    reason = "first recorded path"
                 else:
-                    old_f = old_g + heuristic[neighbor]
-                    sentence = (
-                        f"    This route is better than the previously known "
-                        f"one (old f = {old_f:.0f}). I update {neighbor} accordingly "
-                        f"and re-queue it with the improved priority f = {f_cand:.0f}."
-                    )
-                print(
-                    f"  I examine edge {location} → {neighbor} with cost {weight}. "
-                    f"The provisional cost to {neighbor} is g = {tentative_distance}. "
-                    f"{sentence}"
-                )
-                print("  " + describe(min_heap))
+                    reason = f"better than old g = {old_g:.0f}"
             else:
-                print(
-                    f"  I examine edge {location} → {neighbor} with cost {weight}. "
-                    f"The provisional cost would be g = {tentative_distance}, which is "
-                    f"no better than the best cost already recorded for {neighbor} "
-                    f"(g = {old_g}). Consequently, I leave {neighbor} unchanged; "
-                    f"it remains on the open list with its existing priority."
-                )
+                reason = f"no better than existing g = {old_g:.0f} (node queued anyway)"
 
-        # Finish step with a fresh queue overview.
-        print("  At the end of this expansion step, " + describe(min_heap))
+            print(
+                f"I examine edge {location} → {neighbor} with cost {weight}. "
+                f"The provisional cost to {neighbor} is g = {tentative_distance}; "
+                f"{reason}. I queue the node with f = {f_cand:.0f}."
+            )
+            print("  " + describe(min_heap))
 
         step += 1
 
