@@ -116,7 +116,7 @@ heuristic = {
     'Craiova': 160,
     'Dobreta': 242,
     'Eforie': 161,
-    'Fagaras': 178,
+    'Fagaras': 176,
     'Giurgiu': 77,
     'Hirsova': 151,
     'Iasi': 226,
