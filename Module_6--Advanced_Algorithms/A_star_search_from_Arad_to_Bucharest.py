@@ -148,7 +148,7 @@ def describe(min_heap) -> str:
         f"(f = {f:.0f}, g = {g:.0f}, location = {n}, preceding location = {p})"
         for f, g, n, p in items
     ]
-    return "The min heap currently contains\n" + "\n".join(parts) + "."
+    return "The min heap currently contains\n" + "\n".join(parts) + ".\n"
 
 
 def _hierarchy_pos(G: nx.DiGraph,
@@ -257,7 +257,7 @@ def perform_A_star_search(
     goal: str,
     heuristic
 ):
-    print("\nI begin by placing a node representing the start on min heap ordered by estimated total distance.")
+    print("I begin by placing a node representing the start on a min heap ordered by estimated total distance.")
     initial_distance_so_far = 0
     initial_estimated_distance_from_node_to_goal = heuristic[start]
     initial_estimated_total_distance = initial_distance_so_far + initial_estimated_distance_from_node_to_goal
@@ -271,32 +271,29 @@ def perform_A_star_search(
     search_tree = nx.DiGraph()
     search_tree.add_node(start)
 
+    step = 0
     set_of_locations_corresponding_to_expanded_nodes: set[str] = set()
     dictionary_of_locations_and_preceding_locations: dict[str, str] = {}
-
-    g_best: dict[str, float] = {start: 0.0} # cheapest g discovered so far
-
-    step = 0
+    dictionary_of_locations_and_best_distances_so_far: dict[str, float] = {start: 0.0}
     while min_heap:
-        estimated_total_distance, cost_so_far, location, preceding_location = heapq.heappop(min_heap)
+
+        # Select node from min heap.
+        estimated_total_distance, distance_so_far, location, preceding_location = heapq.heappop(min_heap)
+        print(
+            f"Step {step}\n" +
+            "We select a node from the min heap.\n" +
+            "By definition of min heap, we select the node with the minimum estimated total distance.\n" +
+            f"This node is ({estimated_total_distance}, {distance_so_far}, {location}, {preceding_location}).\n" +
+            f"The distance so far g is {distance_so_far}.\n"
+            f"The estimated distance from {location} to goal {goal} h is {heuristic[location]}.\n"
+            f"The estimated total distance from start through {location} to goal f is {estimated_total_distance}.\n"
+        )
         if location in set_of_locations_corresponding_to_expanded_nodes:
             continue
-
-        draw_search_tree(search_tree, set_of_locations_corresponding_to_expanded_nodes, min_heap, selected = location)
-
-        set_of_locations_corresponding_to_expanded_nodes.add(location)
         if preceding_location is not None:
             dictionary_of_locations_and_preceding_locations.setdefault(location, preceding_location)
-
-        print(
-            f"\nStep {step}: I now expand the node with location {location}.\n"
-            f"The distance so far g is {cost_so_far} and "
-            f"the estimated distance from {location} to goal {goal} h is {heuristic[location]}, "
-            f"so the estimated total distance from start through {location} to goal f is {estimated_total_distance}."
-        )
-
-        step += 1
-
+        print("We draw our search tree.\n")
+        draw_search_tree(search_tree, set_of_locations_corresponding_to_expanded_nodes, min_heap, selected = location)
         if location == goal:
             print("Since this is the goal node, the search halts here.\n")
             path = [location]
@@ -304,62 +301,51 @@ def perform_A_star_search(
                 location = dictionary_of_locations_and_preceding_locations[location]
                 path.append(location)
             path.reverse()
-            return path, cost_so_far
+            return path, distance_so_far
 
         # Expand.
+        print(f"We expand the node ({estimated_total_distance}, {distance_so_far}, {location}, {preceding_location}).\n")
+        set_of_locations_corresponding_to_expanded_nodes.add(location)
         for neighbor in graph.neighbors(location):
             weight = graph[location][neighbor]["weight"]
-            tentative_distance = cost_so_far + weight
-
+            tentative_distance_so_far = distance_so_far + weight
+            tentative_estimated_total_distance = tentative_distance_so_far + heuristic[neighbor]
             if neighbor in set_of_locations_corresponding_to_expanded_nodes:
                 print(
-                    f"I consider the edge ({location}, {neighbor}) whose distance is {weight}. "
-                    f"The tentative distance to go from {location} to {neighbor} would be g = {tentative_distance}. "
-                    f"However, {neighbor} has already been expanded, so I can take no further action regarding this edge."
+                    f"We consider traveling from {location} along an edge with distance {weight} to visit {neighbor}.\n"
+                    f"A node with location {neighbor} has already been expanded.\n"
+                    "We continue with other neighbors.\n"
                 )
                 continue
-
-            old_g = g_best.get(neighbor, float("inf"))
-            if tentative_distance < old_g:
-                # A better (or first) path has been found.
-                g_best[neighbor] = tentative_distance
-                f_cand = tentative_distance + heuristic[neighbor]
-                heapq.heappush(min_heap, (f_cand, tentative_distance, neighbor, location))
-
+            existing_distance_so_far = dictionary_of_locations_and_best_distances_so_far.get(neighbor, float("inf"))
+            existing_estimated_total_distance = existing_distance_so_far + heuristic[neighbor]
+            if tentative_distance_so_far < existing_distance_so_far:
+                dictionary_of_locations_and_best_distances_so_far[neighbor] = tentative_distance_so_far
+                heapq.heappush(min_heap, (tentative_estimated_total_distance, tentative_distance_so_far, neighbor, location))
                 search_tree.add_edge(location, neighbor)
-
-                if old_g == float("inf"):
-                    sentence = (
-                        f"    This is the first recorded path to {neighbor}. "
-                        f"I therefore update a representation of {neighbor} to (f = {f_cand}, g = {tentative_distance}, node = '{neighbor}', parent = '{location}'), "
-                        f"and place this represention on the open list."
+                if existing_distance_so_far == float("inf"):
+                    print(
+                        f"We consider traveling from {location} along an edge with distance {weight} to visit {neighbor}.\n" +
+                        f"This edge hasn't been traveled before.\n" +
+                        f"The estimated distance from {neighbor} to goal {goal} h is {heuristic[neighbor]}.\n"
+                        f"We add to the min heap node ({tentative_estimated_total_distance}, {tentative_distance_so_far}, {neighbor}, {location}).\n"
                     )
                 else:
-                    old_f = old_g + heuristic[neighbor]
-                    sentence = (
-                        f"    This route is better than the previously known "
-                        f"one (old f = {old_f:.0f}). I update {neighbor} accordingly "
-                        f"and re-queue it with the improved priority f = {f_cand:.0f}."
+                    print(
+                        f"We consider traveling from {location} along an edge with distance {weight} to revisit {neighbor}.\n" +
+                        f"The tentative node ({tentative_estimated_total_distance}, {tentative_distance_so_far}, {neighbor}, {location}) has a distance so far that is less than the estimated total distance of the existing node ({existing_estimated_total_distance}, {existing_distance_so_far}, {neighbor}, {location}).\n" +
+                        "We replace the existing node with the tentative node.\n"
                     )
-                print(
-                    f"  I examine edge {location} → {neighbor} with cost {weight}. "
-                    f"The provisional cost to {neighbor} is g = {tentative_distance}. "
-                    f"{sentence}"
-                )
-                print("  " + describe(min_heap))
             else:
                 print(
-                    f"  I examine edge {location} → {neighbor} with cost {weight}. "
-                    f"The provisional cost would be g = {tentative_distance}, which is "
-                    f"no better than the best cost already recorded for {neighbor} "
-                    f"(g = {old_g}). Consequently, I leave {neighbor} unchanged; "
-                    f"it remains on the open list with its existing priority."
+                    f"We consider traveling from {location} along an edge with distance {weight} to visit {neighbor}.\n" +
+                    f"The tentative node ({tentative_estimated_total_distance}, {tentative_distance_so_far}, {neighbor}, {location}) has a distance so far that is not less than the estimated total distance of the existing node ({existing_estimated_total_distance}, {existing_distance_so_far}, {neighbor}, {location}).\n"
+                    "We continue with other neighbors.\n"
                 )
 
-        # Finish step with a fresh queue overview.
-        print("  At the end of this expansion step, " + describe(min_heap))
+        step += 1
+        print(describe(min_heap))
 
-    # If we exit the loop, the open list is empty and the goal was not reached.
     return None, float("inf")
 
 
