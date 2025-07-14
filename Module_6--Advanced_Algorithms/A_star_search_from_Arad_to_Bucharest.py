@@ -255,9 +255,10 @@ def perform_A_star_search(
     graph: nx.Graph,
     start: str,
     goal: str,
-    heuristic
+    heuristic: dict[str, int],
+    best_first_slash_greedy_search_will_be_performed
 ):
-    print("I begin by placing a node representing the start on a min heap ordered by estimated total distance.")
+    print("We begin by placing a node representing the start on a min heap ordered by estimated total distance.")
     initial_distance_so_far = 0
     initial_estimated_distance_from_node_to_goal = heuristic[start]
     initial_estimated_total_distance = initial_distance_so_far + initial_estimated_distance_from_node_to_goal
@@ -321,7 +322,10 @@ def perform_A_star_search(
             existing_estimated_total_distance = existing_distance_so_far + heuristic[neighbor]
             if tentative_distance_so_far < existing_distance_so_far:
                 dictionary_of_locations_and_best_distances_so_far[neighbor] = tentative_distance_so_far
-                heapq.heappush(min_heap, (tentative_estimated_total_distance, tentative_distance_so_far, neighbor, location))
+                if best_first_slash_greedy_search_will_be_performed:
+                    heapq.heappush(min_heap, (heuristic[neighbor], tentative_distance_so_far, neighbor, location))
+                else:
+                    heapq.heappush(min_heap, (tentative_estimated_total_distance, tentative_distance_so_far, neighbor, location))
                 search_tree.add_edge(location, neighbor)
                 if existing_distance_so_far == float("inf"):
                     print(
@@ -352,7 +356,13 @@ def perform_A_star_search(
 # Run A* start from Arad to Bucharest.
 start = 'Arad'
 goal = 'Bucharest'
-list_of_nodes_from_start_to_goal, cost_of_traveling_from_start_to_goal = perform_A_star_search(undirected_graph, start, goal, heuristic)
+list_of_nodes_from_start_to_goal, cost_of_traveling_from_start_to_goal = perform_A_star_search(
+    undirected_graph,
+    start,
+    goal,
+    heuristic,
+    best_first_slash_greedy_search_will_be_performed = True
+)
 
 print(f"Path from {start} to {goal}: {list_of_nodes_from_start_to_goal}")
 print(f"Cost of traveling from {start} to {goal}: {cost_of_traveling_from_start_to_goal}")

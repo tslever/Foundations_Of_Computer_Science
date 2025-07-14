@@ -11,19 +11,19 @@ def solve_n_queens(n: int = 8) -> list[list[int]]:
                   diag1: set[int],
                   diag2: set[int],
                   current: list[int]) -> None:
-        if row == n:                 # placed queens in every row
+        if row == n: # placed queens in every row
             solutions.append(current[:])
             return
         for col in range(n):
             if (col in cols or
                 (row - col) in diag1 or
                 (row + col) in diag2):
-                continue             # conflict – skip
+                continue # conflict – skip
 
             # place queen
             cols.add(col)
-            diag1.add(row - col)     # “\” diagonal (r - c is constant)
-            diag2.add(row + col)     # “/” diagonal (r + c is constant)
+            diag1.add(row - col) # “\” diagonal (r - c is constant)
+            diag2.add(row + col) # “/” diagonal (r + c is constant)
             current.append(col)
 
             backtrack(row + 1, cols, diag1, diag2, current)
@@ -39,7 +39,7 @@ def solve_n_queens(n: int = 8) -> list[list[int]]:
 
 
 if __name__ == "__main__":
-    first = solve_n_queens()[0]   # grab one solution
+    first = solve_n_queens()[0] # grab one solution
     print("One 8-queens solution:\n")
     for r in range(8):
         row_str = "".join("Q " if first[r] == c else ". " for c in range(8))
