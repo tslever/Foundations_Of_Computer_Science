@@ -48,6 +48,13 @@ dictionary_of_edges_flows_and_capacities = {
 print("The dictionary of edges, flows, and capacities corresponding to the maximum flow from s to t / over the graph is")
 print(dictionary_of_edges_flows_and_capacities)
 print(f"The maximum flow from s to t / over the graph is {maximum_flow_from_s_to_t}.")
+print(
+    "For every node v that is not source or sink, the flow-conservation constraint applies.\n" +
+    "The sum along all edges ending with v of all inflows to v is equal to " +
+    "the sum along all edges starting with v of all outflows from v.\n" +
+    "The net flow of v is the difference between the inflow and the outflow.\n" +
+    "Since the inflow and outflow of v are equal, the net flow of v is 0."
+)
 
 nx.draw_networkx_nodes(graph, dictionary_of_nodes_and_positions)
 nx.draw_networkx_labels(graph, dictionary_of_nodes_and_positions)
