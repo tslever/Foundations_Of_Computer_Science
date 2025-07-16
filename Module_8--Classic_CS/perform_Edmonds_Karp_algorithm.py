@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
-list_of_directed_edges = [
+list_of_directed_edges_with_capacities = [
     ("s", "1", 16),
     ("s", "2", 12),
 
@@ -31,11 +31,26 @@ dictionary_of_nodes_and_positions = {
 
 
 graph = nx.DiGraph()
-graph.add_weighted_edges_from(list_of_directed_edges, weight = "capacity")
+graph.add_weighted_edges_from(list_of_directed_edges_with_capacities, weight = "capacity")
 
-dictionary_of_edges_and_capacities = {(u, v): data["capacity"] for u, v, data in graph.edges(data = True)}
+maximum_flow_from_s_to_t, dictionary_of_edges_and_flows = nx.maximum_flow(
+    graph,
+    "s",
+    "t",
+    flow_func = nx.algorithms.flow.edmonds_karp
+)
+dictionary_of_edges_and_flows = {(u, v): dictionary_of_edges_and_flows[u].get(v, 0) for u, v, _ in list_of_directed_edges_with_capacities}
+dictionary_of_edges_flows_and_capacities = {
+    (u, v):  f"{dictionary_of_edges_and_flows[(u, v)]}/{capacity}"
+    for u, v, capacity in list_of_directed_edges_with_capacities
+}
+
+print("The dictionary of edges, flows, and capacities corresponding to the maximum flow from s to t / over the graph is")
+print(dictionary_of_edges_flows_and_capacities)
+print(f"The maximum flow from s to t / over the graph is {maximum_flow_from_s_to_t}.")
+
 nx.draw_networkx_nodes(graph, dictionary_of_nodes_and_positions)
 nx.draw_networkx_labels(graph, dictionary_of_nodes_and_positions)
 nx.draw_networkx_edges(graph, dictionary_of_nodes_and_positions)
-nx.draw_networkx_edge_labels(graph, dictionary_of_nodes_and_positions, dictionary_of_edges_and_capacities)
+nx.draw_networkx_edge_labels(graph, dictionary_of_nodes_and_positions, dictionary_of_edges_flows_and_capacities)
 plt.show()
