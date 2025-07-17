@@ -619,6 +619,16 @@ It is true that each district has more than 200 voters who favor party R.
 -----
 '''
 
+'''
+6b) Kentucky Districts
+
+In this example, find two districts that are gerrymanderable and two that are not.
+Perform similar preprocessing steps as done in the Arizona data set, eg select 4 precincts, downsample and rescale.
+Confirm both district pairs using your code and manually.
+For the district pair that is gerrymanderable, what is the Precinct breakdown?
+Your answer should be shown as code output. 
+'''
+
 ## Kentucky!
 # NOTE: the Kentucky Districts are stored as Strings. Be sure to build your query correctly :)
 # See here: https://github.com/boltonvandy/gerrymander/tree/main/State_Data
@@ -646,8 +656,101 @@ print(verify, cursor.fetchall())
 40498 [(1649790, 'DEM'), (1576259, 'REP'), (184839, 'OTH'), (131242, 'IND'), (14326, 'LBT'), (2014, 'GRN'), (1012, 'CONST'), (322, 'SOCWK'), (157, 'REFORM')]
 '''
 
-'''
 #Kentucky
 
-#<Insert code answer here>
+# Select and downsample district pairs 1 & 2.
+KY_d1 = pd.read_sql_query(
+    "SELECT * FROM for_algo WHERE STATE = 'KY' AND CAST(DISTRICT AS INTEGER) = 1",
+    conn
+).head(4)
+KY_d2 = pd.read_sql_query(
+    "SELECT * FROM for_algo WHERE STATE = 'KY' AND CAST(DISTRICT AS INTEGER) = 2",
+    conn
+).head(4)
+KY_1_2 = pd.concat([KY_d1, KY_d2], ignore_index=True)
+
+# Select and downsample district pairs 3 & 4.
+KY_d3 = pd.read_sql_query(
+    "SELECT * FROM for_algo WHERE STATE = 'KY' AND CAST(DISTRICT AS INTEGER) = 3",
+    conn
+).head(4)
+KY_d4 = pd.read_sql_query(
+    "SELECT * FROM for_algo WHERE STATE = 'KY' AND CAST(DISTRICT AS INTEGER) = 4",
+    conn
+).head(4)
+KY_3_4 = pd.concat([KY_d3, KY_d4], ignore_index=True)
+
+# Rescale both dataframes to 100 voters per precinct.
+for df in (KY_1_2, KY_3_4):
+    df["REP_VOTES"]   = pd.to_numeric(df["REP_VOTES"],   errors="raise")
+    df["Total_Votes"] = pd.to_numeric(df["Total_Votes"], errors="raise")
+    df["REP_VOTES"]   = (df["REP_VOTES"] / df["Total_Votes"] * 100).round().astype(int)
+    df["Total_Votes"] = 100
+
+# Run trials.
+run_gerrymander_trial(KY_1_2, "Kentucky districts 1 & 2")
+run_gerrymander_trial(KY_3_4, "Kentucky districts 3 & 4")
+
+
+'''
+----- Gerrymandering trial for Kentucky districts 1 & 2 -----
+Input precinct data for 2 districts rescaled to 100 voters per precinct is the following.
+STATE PRECINCT   DISTRICT  REP_VOTES  Total_Votes
+   KY     A102 1-16-051-3         34          100
+   KY     A104 1-16-051-3         26          100
+   KY     A105 1-16-051-3         88          100
+   KY     B102 1-16-051-3         32          100
+   KY     A101 2-09-023-2         45          100
+   KY     A102 2-09-023-2         43          100
+   KY     A103 2-09-023-2         50          100
+   KY     A104 2-09-023-2         53          100
+isGerrymanderingPossible is being run on the precinct data for 2 districts.
+Gerrymandering is not possible for Kentucky districts 1 & 2.
+We manually check that an assignment of precincts to districts resulting in Gerrymandered districts exists.
+helpDetermineWhetherGerrymanderPossible did not find an assignment.
+We conclude that Gerrymandering is not possible.
+-----
+
+----- Gerrymandering trial for Kentucky districts 3 & 4 -----
+Input precinct data for 2 districts rescaled to 100 voters per precinct is the following.
+STATE PRECINCT   DISTRICT  REP_VOTES  Total_Votes
+   KY     A105 3-37-028-4         34          100
+   KY     A107 3-37-028-4         34          100
+   KY     A108 3-37-028-4         40          100
+   KY     A111 3-37-028-4         40          100
+   KY     A102 4-11-060-6         72          100
+   KY     A103 4-11-066-6         73          100
+   KY     A104 4-11-066-6         69          100
+   KY     A105 4-11-060-6         75          100
+isGerrymanderingPossible is being run on the precinct data for 2 districts.
+ Precinct  RedVotes  District
+        0        34         1
+        1        34         1
+        2        40         2
+        3        40         2
+        4        72         1
+        5        73         2
+        6        69         1
+        7        75         2
+The number of voters who favor party R in district D_1 is 209.
+The number of voters who favor party R in district D_2 is 228.
+Gerrymandering is possible for Kentucky districts 3 & 4.
+The table printed above by the algorithm shows 1 valid precinct reassignment and the resulting per-district R totals.
+We manually check that the numbers of voters who favor party R in each district are greater than 200.
+Below are new precincts in the first district and the numbers of voters who favor party R in those precincts.
+PRECINCT  REP_VOTES
+    A105         34
+    A107         34
+    A102         72
+    A104         69
+The total number of voters who favor party R in the first district is 209.
+Below are new precincts in the second district and the numbers of voters who favor party R in those precincts.
+PRECINCT  REP_VOTES
+    A108         40
+    A111         40
+    A103         73
+    A105         75
+The total number of voters who favor party R in the second district is 228.
+It is true that each district has more than 200 voters who favor party R.
+-----
 '''
