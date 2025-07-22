@@ -1,5 +1,6 @@
-import matplotlib.pyplot as plt
+from collections import deque
 import networkx as nx
+import matplotlib.pyplot as plt
 
 
 list_of_directed_edges_with_capacities = [
@@ -30,62 +31,223 @@ dictionary_of_nodes_and_positions = {
 }
 
 
+print("We define a directed graph.")
 graph = nx.DiGraph()
-graph.add_weighted_edges_from(list_of_directed_edges_with_capacities, weight = "capacity")
+for u, v, capacity in list_of_directed_edges_with_capacities:
+    graph.add_edge(u, v, capacity = capacity, flow = 0)
 
-maximum_flow_from_s_to_t, dictionary_of_edges_and_flows = nx.maximum_flow(
-    graph,
-    "s",
-    "t",
-    flow_func = nx.algorithms.flow.edmonds_karp
-)
-dictionary_of_edges_and_flows = {(u, v): dictionary_of_edges_and_flows[u].get(v, 0) for u, v, _ in list_of_directed_edges_with_capacities}
-dictionary_of_edges_flows_and_capacities = {
-    (u, v):  f"{dictionary_of_edges_and_flows[(u, v)]}/{capacity}"
-    for u, v, capacity in list_of_directed_edges_with_capacities
-}
 
-print(
-    "Consider the flow network below with source s, sink t and above capacities.\n" +
-    "For example, the capacity between the source and node 1 is 16.\n\n" +
-    
-    "The dictionary of edges, flows, and capacities corresponding to the maximum flow from s to t / over the graph is\n" +
-    f"{dictionary_of_edges_flows_and_capacities}\n\n" +
+def draw_flow_network(graph, title, ax):
+    dictionary_of_edges_flows_and_capacities = {
+        (u, v): f"{data['flow']} / {data['capacity']}"
+        for u, v, data in graph.edges(data = True)
+    }
+    nx.draw_networkx_nodes(
+        graph,
+        dictionary_of_nodes_and_positions,
+        node_color = "lightgrey",
+        ax = ax
+    )
+    nx.draw_networkx_labels(
+        graph,
+        dictionary_of_nodes_and_positions,
+        ax = ax
+    )
+    nx.draw_networkx_edges(
+        graph,
+        dictionary_of_nodes_and_positions,
+        arrowstyle = "->",
+        arrowsize = 15,
+        ax = ax
+    )
+    nx.draw_networkx_edge_labels(
+        graph,
+        dictionary_of_nodes_and_positions,
+        edge_labels = dictionary_of_edges_flows_and_capacities,
+        ax = ax
+    )
+    ax.set_title(title)
+    ax.axis("off")
 
-    "What is the maximum flow?\n" +
-    f"The maximum flow from s to t / over the graph is {maximum_flow_from_s_to_t}.\n\n" +
 
-    "For all nodes that are not source or sink, what can be said about their net flow?\n" +
-    "For every node v that is not source or sink, the flow-conservation constraint applies.\n" +
-    "The sum along all edges ending with v of all inflows to v is equal to " +
-    "the sum along all edges starting with v of all outflows from v.\n" +
-    "The net flow of v is the difference between the outflow from v and the inflow to v.\n" +
-    "Since the inflow to v and outflow from v are equal, the net flow of v is 0.\n\n" +
+def build_residual_network(graph):
+    residual_network = nx.DiGraph()
+    for u, v, data in graph.edges(data = True):
+        capacity = data["capacity"]
+        flow = data["flow"]
+        residual_capacity = capacity - flow
+        if residual_capacity > 0:
+            residual_network.add_edge(u, v, capacity = residual_capacity, forward = True)
+        if flow > 0:
+            residual_network.add_edge(v, u, capacity = flow, forward = False)
+    return residual_network
 
-    "What can be said about the net flow for the source?\n" +
-    "The net flow of the source s is equal to the difference between the outflow from s and the inflow to s.\n" +
-    "The inflow to s is 0.\n" +
-    "The net flow of s is the outflow from s.\n" +
-    "All flow leaves s.\n" +
-    "The source supplies all flow to the graph.\n" +
-    "The maximum flow is 23.\n" +
-    "The outflow from s is 23.\n" +
-    "The net flow of s is 23.\n\n" +
 
-    "What can be said about the net flow for the sink?\n"
-    "The net flow of the sink t is equal to the difference between the outflow from t and the inflow to t.\n" +
-    "The outflow from t is 0.\n" +
-    "The net flow of t is the negative inflow to t.\n" +
-    "The net flow of t is the inflow to t.\n" +
-    "All flow comes to t.\n" +
-    "The sink receives all flow from the graph.\n" +
-    "The maximum flow is 23.\n" +
-    "The inflow to t is 23.\n" +
-    "The net flow of t is -23."
-)
+def draw_residual_network(residual_network, title, ax, augmentation_path = None):
+    list_of_forward_edges = [
+        (u, v) for u, v, data in residual_network.edges(data = True) if data["forward"]
+    ]
+    list_of_backward_edges = [
+        (u, v) for u, v, data in residual_network.edges(data = True) if not data["forward"]
+    ]
+    nx.draw_networkx_nodes(
+        residual_network,
+        dictionary_of_nodes_and_positions,
+        node_color = "lightgrey",
+        ax = ax
+    )
+    nx.draw_networkx_labels(
+        residual_network,
+        dictionary_of_nodes_and_positions,
+        ax = ax
+    )
+    nx.draw_networkx_edges(
+        residual_network,
+        dictionary_of_nodes_and_positions,
+        edgelist = list_of_forward_edges,
+        edge_color = "green",
+        arrowstyle = "->",
+        arrowsize = 15,
+        width = 2,
+        connectionstyle = "arc3,rad=0.0",
+        ax = ax
+    )
+    nx.draw_networkx_edges(
+        residual_network,
+        dictionary_of_nodes_and_positions,
+        edgelist = list_of_backward_edges,
+        edge_color = "blue",
+        arrowstyle = "->",
+        arrowsize = 15,
+        width = 2,
+        connectionstyle = "arc3,rad=0.17",
+        ax = ax
+    )
+    if augmentation_path:
+        nx.draw_networkx_edges(
+            residual_network,
+            dictionary_of_nodes_and_positions,
+            edgelist = augmentation_path,
+            edge_color = "purple",
+            width = 2,
+            arrowstyle = "->",
+            arrowsize = 15,
+            ax = ax,
+            connectionstyle = "arc3,rad=0.2"
+        )
+    dictionary_of_forward_edges_and_capacities = {
+        edge: f"{residual_network.edges[edge]["capacity"]}" for edge in list_of_forward_edges
+    }
+    dictionary_of_backward_edges_and_capacities = {
+        edge: f"{residual_network.edges[edge]["capacity"]}" for edge in list_of_backward_edges
+    }
+    nx.draw_networkx_edge_labels(
+        residual_network,
+        dictionary_of_nodes_and_positions,
+        edge_labels = dictionary_of_forward_edges_and_capacities,
+        label_pos = 0.7,
+        font_color = "green",
+        ax = ax
+    )
+    nx.draw_networkx_edge_labels(
+        residual_network,
+        dictionary_of_nodes_and_positions,
+        edge_labels = dictionary_of_backward_edges_and_capacities,
+        label_pos = 0.7,
+        font_color = "blue",
+        ax = ax
+    )
+    ax.set_title(title)
+    ax.axis("off")
 
-nx.draw_networkx_nodes(graph, dictionary_of_nodes_and_positions)
-nx.draw_networkx_labels(graph, dictionary_of_nodes_and_positions)
-nx.draw_networkx_edges(graph, dictionary_of_nodes_and_positions)
-nx.draw_networkx_edge_labels(graph, dictionary_of_nodes_and_positions, dictionary_of_edges_flows_and_capacities)
-plt.show()
+
+def draw_side_by_side(graph, residual_network, title_of_flow_network, title_of_residual_network, augmentation_path = None):
+    _, (ax_left, ax_right) = plt.subplots(1, 2, figsize = (12, 4))
+    draw_flow_network(
+        graph,
+        title_of_flow_network,
+        ax_left
+    )
+    draw_residual_network(
+        residual_network,
+        title_of_residual_network,
+        ax_right,
+        augmentation_path
+    )
+    plt.tight_layout()
+    plt.show()
+
+
+def perform_Breadth_First_Search(residual_network, s, t):
+    dictionary_of_nodes_and_parents = {s: None}
+    queue = deque([s])
+    while queue and t not in dictionary_of_nodes_and_parents:
+        u = queue.popleft()
+        for v in residual_network.successors(u):
+            if v not in dictionary_of_nodes_and_parents and residual_network[u][v]["capacity"] > 0:
+                dictionary_of_nodes_and_parents[v] = u
+                queue.append(v)
+    if t not in dictionary_of_nodes_and_parents:
+        return None, 0
+    path = []
+    capacity_of_bottleneck = float("inf")
+    v = t
+    while v != s:
+        u = dictionary_of_nodes_and_parents[v]
+        path.append((u, v))
+        capacity_of_bottleneck = min(capacity_of_bottleneck, residual_network[u][v]["capacity"])
+        v = u
+    path.reverse()
+    return path, capacity_of_bottleneck
+
+
+def perform_Edmonds_Karp_algorithm(graph, s, t, we_should_visualize):
+    iteration  = 0
+    max_flow = 0
+    while True:
+        print(f"We begin iteration {iteration} with max flow {max_flow}.")
+        print("We build a residual network.")
+        residual_network = build_residual_network(graph)
+        if we_should_visualize:
+            print("We visualize the main network and the residual network.")
+            draw_side_by_side(
+                graph,
+                residual_network,
+                f"Network After Building Residual Network In Iteration {iteration}",
+                f"Residual Network After Building Residual Network In Iteration {iteration}"
+            )
+        print("We perform Breadth First Search to find an augmentation path in the residual network.")
+        augmentation_path, capacity_of_bottleneck = perform_Breadth_First_Search(residual_network, s, t)
+        if augmentation_path:
+            list_of_nodes = [edge[0] for edge in augmentation_path]
+            list_of_nodes.append(augmentation_path[len(augmentation_path) - 1][1])
+            print(f"The augmentation path is [{', '.join(list_of_nodes)}].")
+            print(f"The capacity of the bottleneck is {capacity_of_bottleneck}.")
+        else:
+            print("No augmentation path exists.")
+            break
+        for u, v in augmentation_path:
+            if graph.has_edge(u, v):
+                print(f"We add the capacity of the bottleneck of our augmentation path to edge ({u}, {v}) in our main network.")
+                graph[u][v]["flow"] += capacity_of_bottleneck
+            elif graph.has_edge(v, u):
+                print(f"We subtract the capacity of the bottleneck of our augmentation path to edge ({v}, {u}) in our main network.")
+                graph[v][u]["flow"] -= capacity_of_bottleneck
+            else:
+                raise Exception(f"Both edges (u, v) and (v, u) do not exist.")
+        max_flow += capacity_of_bottleneck
+        print(f"We increase max flow to {max_flow}.")
+        if we_should_visualize:
+            draw_side_by_side(
+                graph,
+                residual_network,
+                f"Network After Completing Iteration {iteration}",
+                f"Residual Network After Completing Iteration {iteration}",
+                augmentation_path
+            )
+        iteration += 1
+    print(f"The maximum flow from s to t / over the graph is {max_flow}.")
+    return max_flow
+
+print("We perform the Edmonds Karp algorithm.")
+maximum_flow_from_s_to_t = perform_Edmonds_Karp_algorithm(graph, "s", "t", we_should_visualize = True)
