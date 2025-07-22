@@ -31,10 +31,12 @@ dictionary_of_nodes_and_positions = {
 }
 
 
-print("We define a directed graph.")
-graph = nx.DiGraph()
-for u, v, capacity in list_of_directed_edges_with_capacities:
-    graph.add_edge(u, v, capacity = capacity, flow = 0)
+def make_initial_network():
+    print("We define a directed graph.")
+    graph = nx.DiGraph()
+    for u, v, capacity in list_of_directed_edges_with_capacities:
+        graph.add_edge(u, v, capacity = capacity, flow = 0)
+    return graph
 
 
 def draw_flow_network(graph, title, ax):
@@ -201,23 +203,47 @@ def perform_Breadth_First_Search(residual_network, s, t):
     return path, capacity_of_bottleneck
 
 
-def perform_Edmonds_Karp_algorithm(graph, s, t, we_should_visualize):
+def perform_Depth_First_Search(residual_network, s, t):
+    path_so_far = []
+    stack = [(s, path_so_far)]
+    set_of_visited_nodes = set()
+    while stack:
+        u, path_so_far = stack.pop()
+        if u == t:
+            capacity_of_bottleneck = min(residual_network[edge[0]][edge[1]]["capacity"] for edge in path_so_far)
+            return path_so_far, capacity_of_bottleneck
+        if u in set_of_visited_nodes:
+            continue
+        set_of_visited_nodes.add(u)
+        for v in residual_network.successors(u):
+            if v not in set_of_visited_nodes and residual_network[u][v]["capacity"] > 0:
+                stack.append((v, path_so_far + [(u, v)]))
+    return None, 0
+
+
+def find_max_flow(graph, s, t, name_of_algorithm, we_should_visualize):
     iteration  = 0
     max_flow = 0
     while True:
-        print(f"We begin iteration {iteration} with max flow {max_flow}.")
+        print(f"We begin iteration {iteration} of {name_of_algorithm} with current max flow {max_flow}.")
         print("We build a residual network.")
         residual_network = build_residual_network(graph)
         if we_should_visualize:
-            print("We visualize the main network and the residual network.")
+            print("We visualize the main network and the residual network.\n")
             draw_side_by_side(
                 graph,
                 residual_network,
-                f"Network After Building Residual Network In Iteration {iteration}",
-                f"Residual Network After Building Residual Network In Iteration {iteration}"
+                f"Flow Network At Beginning Of Iteration {iteration} Of\n{name_of_algorithm}",
+                f"Residual Network At Beginning Of Iteration {iteration} Of\n{name_of_algorithm}"
             )
-        print("We perform Breadth First Search to find an augmentation path in the residual network.")
-        augmentation_path, capacity_of_bottleneck = perform_Breadth_First_Search(residual_network, s, t)
+        if name_of_algorithm == "Edmonds-Karp Algorithm":
+            print("We perform Breadth First Search to find an augmentation path in the residual network.")
+            augmentation_path, capacity_of_bottleneck = perform_Breadth_First_Search(residual_network, s, t)
+        elif name_of_algorithm == "Ford-Fulkerson Algorithm":
+            print("We perform Depth First Search to find an augmentation path in the residual network.")
+            augmentation_path, capacity_of_bottleneck = perform_Depth_First_Search(residual_network, s, t)
+        else:
+            raise Exception(f"{name_of_algorithm} is unsupported.")
         if augmentation_path:
             list_of_nodes = [edge[0] for edge in augmentation_path]
             list_of_nodes.append(augmentation_path[len(augmentation_path) - 1][1])
@@ -238,16 +264,18 @@ def perform_Edmonds_Karp_algorithm(graph, s, t, we_should_visualize):
         max_flow += capacity_of_bottleneck
         print(f"We increase max flow to {max_flow}.")
         if we_should_visualize:
+            print("We visualize the main network and the residual network.\n")
             draw_side_by_side(
                 graph,
                 residual_network,
-                f"Network After Completing Iteration {iteration}",
-                f"Residual Network After Completing Iteration {iteration}",
+                f"Flow Network At End Of Iteration {iteration} Of\n{name_of_algorithm}",
+                f"Residual Network At End Of Iteration {iteration} Of\n{name_of_algorithm}",
                 augmentation_path
             )
         iteration += 1
-    print(f"The maximum flow from s to t / over the graph is {max_flow}.")
+    print(f"The maximum flow from s to t / over the graph per the {name_of_algorithm} is {max_flow}.\n")
     return max_flow
 
 print("We perform the Edmonds Karp algorithm.")
-maximum_flow_from_s_to_t = perform_Edmonds_Karp_algorithm(graph, "s", "t", we_should_visualize = True)
+maximum_flow_from_s_to_t = find_max_flow(make_initial_network(), "s", "t", "Edmonds-Karp Algorithm", we_should_visualize = True)
+maximum_flow_from_s_to_t = find_max_flow(make_initial_network(), "s", "t", "Ford-Fulkerson Algorithm", we_should_visualize = True)
