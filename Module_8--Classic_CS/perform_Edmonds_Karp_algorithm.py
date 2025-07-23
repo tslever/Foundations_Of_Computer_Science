@@ -20,7 +20,6 @@ list_of_directed_edges_with_capacities = [
 ]
 
 
-# Lay out the undirected graph.
 dictionary_of_nodes_and_positions = {
     "s": (30, -142),
     "1": (192, -29),
@@ -28,6 +27,40 @@ dictionary_of_nodes_and_positions = {
     "3": (401, -29),
     "4": (401, -273),
     "t": (549, -142)
+}
+
+
+list_of_directed_edges_with_capacities = [
+    ("s", "u", 10),
+    #("s", "v", 10),
+    ("s", "a", 10),
+
+    ("a", "b", 10),
+
+    ("b", "v", 10),
+
+    #("u", "t", 10),
+    ("u", "c", 10),
+
+    ("c", "d", 10),
+
+    ("d", "t", 10),
+
+    ("u", "v", 1),
+
+    ("v", "t", 10)
+]
+
+
+dictionary_of_nodes_and_positions = {
+    "a": (0, -3),
+    "b": (1, -4),
+    "c": (3, 0),
+    "d": (4, -1),
+    "s": (1, -2),
+    "t": (3, -2),
+    "u": (2, -1),
+    "v": (2, -3)
 }
 
 
@@ -257,7 +290,7 @@ def find_max_flow(graph, s, t, name_of_algorithm, we_should_visualize):
                 print(f"We add the capacity of the bottleneck of our augmentation path to edge ({u}, {v}) in our main network.")
                 graph[u][v]["flow"] += capacity_of_bottleneck
             elif graph.has_edge(v, u):
-                print(f"We subtract the capacity of the bottleneck of our augmentation path to edge ({v}, {u}) in our main network.")
+                print(f"We subtract the capacity of the bottleneck of our augmentation path from edge ({v}, {u}) in our main network.")
                 graph[v][u]["flow"] -= capacity_of_bottleneck
             else:
                 raise Exception(f"Both edges (u, v) and (v, u) do not exist.")
